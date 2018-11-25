@@ -9,7 +9,7 @@ import numpy as np
 # B     | N/A   | 2     |
 
 def merge_op(df1, df2):
-    return pd.concat([df, df2], axis=1, sort=True)
+    return pd.concat([df1, df2], axis=1, sort=True)
     #return df.append(df2)
 
 s = pd.Series([1], index=['A'], name='ColA')
