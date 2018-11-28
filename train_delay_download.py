@@ -5,7 +5,12 @@ import time
 import jsonpickle
 from trip_objects import *
 
+def utcStr():
+    ts = time.gmtime()
+    return time.strftime("%Y-%m-%d %H:%M:%S", ts)
+
 def download_delayed_trips():
+    print(utcStr() + ": Downloading delayed trips...")
     feed = gtfs_realtime_pb2.FeedMessage()
     req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
     f = open("credentials.txt", 'r')
@@ -33,6 +38,8 @@ def download_delayed_trips():
     frozen = jsonpickle.encode(trips)
     file = open( str(trips.time_started) + ".json", "w" )
     file.write(frozen)
+
+    print(utcStr() + ": Found " + str(len(trips.trip_updates)) + " trips")
 
 if __name__== "__main__":
     download_delayed_trips()
