@@ -35,12 +35,14 @@ for entity in feed.entity:
             stop_ids = []
             delays = []
             for stop_time_update in entity.trip_update.stop_time_update:
-                stop_ids.append(stop_time_update.stop_id)
-                delays.append(stop_time_update.departure.delay)
-            s = pd.Series(delays, index=stop_ids, name=entity.id)
-            df2 = pd.DataFrame(s, dtype=int)
-            if len(df) == 0:
-                df = df2
-            else:
-                df = pd.concat([df, df2], axis=0, sort=True)
-            #print(entity)
+                if stop_time_update.departure.delay > 0:
+                    stop_ids.append(stop_time_update.stop_id)
+                    delays.append(stop_time_update.departure.delay)
+            if len(delays) > 0:
+                s = pd.Series(delays, index=stop_ids, name=entity.id)
+                df2 = pd.DataFrame(s, dtype=int)
+                #if len(df) == 0:
+                #    df = df2
+                #else:
+                #    df = pd.concat([df, df2], axis=1, sort=True)
+                print(entity)
