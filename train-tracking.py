@@ -6,16 +6,20 @@ import numpy as np
 
 # https://developers.google.com/transit/gtfs-realtime/examples/python-sample
 
-# The goal of this script is to record delays against stops and trips ids and route ids
-# Each pass through, see if delays have changed for the same runs
-# do delays get removed from the list once trains has passed through, or do they remain?
-# For now can leave every stop and run as the ID, don't need to map to sensible names until later
+class StopTimeUpdate:
+    def __init__(self, stop_id, arrival_delay, departure_delay, schedule_relationship):
+        self.arrival_delay = arrival_delay
+        self.departure_delay = departure_delay
+        self.stop_id = stop_id
+        self.schedule_relationship = schedule_relationship
 
-# stop_id | service A | service B |
-# A       | 10        | N/A       |
-# B       | N/A       | 2         |
-
-# N/A might mean no delay or stop is not part of service. can fill that in with timetable later
+class TripUpdate:
+    def __init__(self, trip_id, route_id, schedule_relationship, timestamp):
+        self.stop_time_updates = []
+        self.trip_id = trip_id
+        self.route_id = route_id
+        self.schedule_relationship = schedule_relationship
+        self.timestamp = timestamp
 
 try:
     df = pd.read_pickle('foo.pkl')
@@ -29,20 +33,19 @@ apikey = f.read()
 req.add_header('Authorization', 'apikey ' + apikey)
 response = urllib.request.urlopen(req)
 feed.ParseFromString(response.read())
+trip_updates = []
 for entity in feed.entity:
-    if entity.HasField('trip_update'):
-        if len(entity.trip_update.stop_time_update) > 0:
-            stop_ids = []
-            delays = []
-            for stop_time_update in entity.trip_update.stop_time_update:
-                if stop_time_update.departure.delay > 0:
-                    stop_ids.append(stop_time_update.stop_id)
-                    delays.append(stop_time_update.departure.delay)
-            if len(delays) > 0:
-                s = pd.Series(delays, index=stop_ids, name=entity.id)
-                df2 = pd.DataFrame(s, dtype=int)
-                #if len(df) == 0:
-                #    df = df2
-                #else:
-                #    df = pd.concat([df, df2], axis=1, sort=True)
-                print(entity)
+    if entity.HasField('trip_update') and len(entity.trip_update.stop_time_update) > 0:
+        trip_update = TripUpdate(entity.trip_update.trip.trip_id,
+                                 entity.trip_update.trip.route_id,
+                                 entity.trip_update.trip.schedule_relationship,
+                                 entity.trip_update.timestamp)
+        
+        for stop_time_update in entity.trip_update.stop_time_update:
+            trip_update.stop_time_updates.append(
+                StopTimeUpdate(stop_time_update.stop_id,
+                                stop_time_update.arrival.delay, 
+                                stop_time_update.departure.delay,
+                                stop_time_update.schedule_relationship))
+        
+        trip_updates.append(trip_update)
