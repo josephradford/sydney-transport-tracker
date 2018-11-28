@@ -2,6 +2,7 @@ from google.transit import gtfs_realtime_pb2
 import urllib
 import pickle
 import time
+import jsonpickle
 
 # https://developers.google.com/transit/gtfs-realtime/examples/python-sample
 
@@ -44,4 +45,7 @@ for entity in feed.entity:
                                 stop_time_update.schedule_relationship))
         
         trip_updates.append(trip_update)
-pickle.dump(trip_updates, open( str(time_started) + ".pickle", "wb" ))
+
+frozen = jsonpickle.encode(trip_updates)
+file = open( str(time_started) + ".json", "w" )
+file.write(frozen)
