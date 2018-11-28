@@ -21,6 +21,11 @@ class TripUpdate:
         self.schedule_relationship = schedule_relationship
         self.timestamp = timestamp
 
+class NetworkDelays:
+    def __init__(self):
+        self.trip_updates = []
+        self.time_started = time.time()
+
 feed = gtfs_realtime_pb2.FeedMessage()
 req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
 f = open("credentials.txt", 'r')
@@ -28,8 +33,7 @@ apikey = f.read()
 req.add_header('Authorization', 'apikey ' + apikey)
 response = urllib.request.urlopen(req)
 feed.ParseFromString(response.read())
-trip_updates = []
-time_started = time.time()
+network_delays = NetworkDelays()
 for entity in feed.entity:
     if entity.HasField('trip_update') and len(entity.trip_update.stop_time_update) > 0:
         trip_update = TripUpdate(entity.trip_update.trip.trip_id,
@@ -44,8 +48,8 @@ for entity in feed.entity:
                                 stop_time_update.departure.delay,
                                 stop_time_update.schedule_relationship))
         
-        trip_updates.append(trip_update)
+        network_delays.trip_updates.append(trip_update)
 
-frozen = jsonpickle.encode(trip_updates)
-file = open( str(time_started) + ".json", "w" )
+frozen = jsonpickle.encode(network_delays)
+file = open( str(network_delays.time_started) + ".json", "w" )
 file.write(frozen)
