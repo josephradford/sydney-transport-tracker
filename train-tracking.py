@@ -3,28 +3,9 @@ import urllib
 import pickle
 import time
 import jsonpickle
+from trip_objects import *
 
 # https://developers.google.com/transit/gtfs-realtime/examples/python-sample
-
-class StopTimeUpdate:
-    def __init__(self, stop_id, arrival_delay, departure_delay, schedule_relationship):
-        self.arrival_delay = arrival_delay
-        self.departure_delay = departure_delay
-        self.stop_id = stop_id
-        self.schedule_relationship = schedule_relationship
-
-class TripUpdate:
-    def __init__(self, trip_id, route_id, schedule_relationship, timestamp):
-        self.stop_time_updates = []
-        self.trip_id = trip_id
-        self.route_id = route_id
-        self.schedule_relationship = schedule_relationship
-        self.timestamp = timestamp
-
-class NetworkDelays:
-    def __init__(self):
-        self.trip_updates = []
-        self.time_started = time.time()
 
 feed = gtfs_realtime_pb2.FeedMessage()
 req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
@@ -33,7 +14,7 @@ apikey = f.read()
 req.add_header('Authorization', 'apikey ' + apikey)
 response = urllib.request.urlopen(req)
 feed.ParseFromString(response.read())
-network_delays = NetworkDelays()
+trips = NetworkTrips()
 for entity in feed.entity:
     if entity.HasField('trip_update') and len(entity.trip_update.stop_time_update) > 0:
         trip_update = TripUpdate(entity.trip_update.trip.trip_id,
@@ -48,8 +29,8 @@ for entity in feed.entity:
                                 stop_time_update.departure.delay,
                                 stop_time_update.schedule_relationship))
         
-        network_delays.trip_updates.append(trip_update)
+        trips.trip_updates.append(trip_update)
 
-frozen = jsonpickle.encode(network_delays)
-file = open( str(network_delays.time_started) + ".json", "w" )
+frozen = jsonpickle.encode(trips)
+file = open( str(trips.time_started) + ".json", "w" )
 file.write(frozen)
