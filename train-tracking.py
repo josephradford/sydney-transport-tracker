@@ -1,8 +1,7 @@
 from google.transit import gtfs_realtime_pb2
 import urllib
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
+import pickle
+import time
 
 # https://developers.google.com/transit/gtfs-realtime/examples/python-sample
 
@@ -21,11 +20,6 @@ class TripUpdate:
         self.schedule_relationship = schedule_relationship
         self.timestamp = timestamp
 
-try:
-    df = pd.read_pickle('foo.pkl')
-except FileNotFoundError:
-    df = pd.DataFrame()
-
 feed = gtfs_realtime_pb2.FeedMessage()
 req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
 f = open("credentials.txt", 'r')
@@ -34,6 +28,7 @@ req.add_header('Authorization', 'apikey ' + apikey)
 response = urllib.request.urlopen(req)
 feed.ParseFromString(response.read())
 trip_updates = []
+time_started = time.time()
 for entity in feed.entity:
     if entity.HasField('trip_update') and len(entity.trip_update.stop_time_update) > 0:
         trip_update = TripUpdate(entity.trip_update.trip.trip_id,
@@ -49,3 +44,4 @@ for entity in feed.entity:
                                 stop_time_update.schedule_relationship))
         
         trip_updates.append(trip_update)
+pickle.dump(trip_updates, open( str(time_started) + ".pickle", "wb" ))
