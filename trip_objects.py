@@ -19,4 +19,4 @@ class TripUpdate:
 class NetworkTrips:
     def __init__(self):
         self.trip_updates = []
-        self.time_started = time.time()
+        self.time_started = time.localtime()

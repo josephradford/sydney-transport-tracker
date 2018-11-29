@@ -2,7 +2,6 @@ from google.transit import gtfs_realtime_pb2
 import urllib
 import pickle
 import time
-import jsonpickle
 from trip_objects import *
 
 def utcStr():
@@ -35,10 +34,7 @@ def download_delayed_trips():
             
             trips.trip_updates.append(trip_update)
 
-    frozen = jsonpickle.encode(trips)
-    file = open( str(trips.time_started) + ".json", "w" )
-    file.write(frozen)
-
+    pickle.dump(trips, open(time.strftime("%H%M%S", trips.time_started) + ".pickle", "wb" ))
     print(utcStr() + ": Found " + str(len(trips.trip_updates)) + " trips")
 
 if __name__== "__main__":
