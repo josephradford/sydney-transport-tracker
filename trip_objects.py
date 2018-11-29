@@ -33,6 +33,14 @@ class TripUpdate:
         self.schedule_relationship = schedule_relationship
         self.timestamp = timestamp
 
+    def is_delayed(self):
+        # this attribute should be tracked as items are appended
+        for stop_time_update in self.stop_time_updates:
+            if stop_time_update.arrival_delay > 0 or stop_time_update.departure_delay > 0:
+                return True
+        return False
+
+
 class NetworkTrips:
     def __init__(self):
         self.trip_updates = []
