@@ -2,6 +2,7 @@ import pickle
 import time
 from trip_objects import *
 import os
+from progress.bar import Bar
 
 def merge_trips(old_trip, new_trip):
     if old_trip.trip_id != new_trip.trip_id:
@@ -21,6 +22,9 @@ def collate_train_delays(data_dir):
     files = os.listdir(data_dir)
     merged_trips = []
     trips = NetworkTrips()
+
+    bar = Bar('Merging files', max=len(files))
+
     for delay_data_file in files:
         try:
             trips = pickle.load(open(data_dir + "/" + delay_data_file, "rb" ))
@@ -37,6 +41,10 @@ def collate_train_delays(data_dir):
 
             if foundTrip == False:
                 merged_trips.append(new_trip)
+
+        bar.next()
+
+    bar.finish()
 
     pickle.dump(trips, open(data_dir + "/collated_delays.pickle", "wb" ))
     print("Found " + str(len(merged_trips)) + " trips")
