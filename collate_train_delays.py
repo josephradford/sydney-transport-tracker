@@ -16,8 +16,8 @@ def merge_trips(old_trip, new_trip):
         for old_stop_time_update in old_trip.stop_time_updates:
             if old_stop_time_update.stop_id == new_stop_time_update.stop_id:
                 # take the new one for now
-                if old_stop_time_update != new_stop_time_update:
-                    old_stop_time_update = new_stop_time_update
+                #if old_stop_time_update != new_stop_time_update:
+                old_stop_time_update = new_stop_time_update
                 foundStop = True
                 break
         if not foundStop:
