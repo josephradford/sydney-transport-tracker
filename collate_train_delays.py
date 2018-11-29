@@ -17,9 +17,6 @@ def merge_trips(old_trip, new_trip):
         if not foundStop:
             old_trip.stop_time_updates.append(new_stop_time_update)
     
-
-
-
 def collate_train_delays(data_dir):
     files = os.listdir(data_dir)
     merged_trips = []
@@ -41,7 +38,9 @@ def collate_train_delays(data_dir):
             if foundTrip == False:
                 merged_trips.append(new_trip)
 
+    pickle.dump(trips, open(data_dir + "/collated_delays.pickle", "wb" ))
     print("Found " + str(len(merged_trips)) + " trips")
+
 
 if __name__== "__main__":
     data_dir = "data/" + time.strftime("%Y%m%d", time.localtime())
