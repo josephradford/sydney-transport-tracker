@@ -50,7 +50,7 @@ def collate_train_delays(data_dir):
 
     bar.finish()
 
-    pickle.dump(trips, open(data_dir + "/collated_delays.pickle", "wb" ))
+    pickle.dump(merged_trips, open(data_dir + "/collated_delays.pickle", "wb" ))
     print("Found " + str(len(merged_trips)) + " trips")
 
 
