@@ -5,12 +5,12 @@ import time
 from trip_objects import *
 import os
 
-def utcStr():
-    ts = time.gmtime()
+def timeStr():
+    ts = time.localtime()
     return time.strftime("%Y-%m-%d %H:%M:%S", ts)
 
 def download_delayed_trips(data_dir):
-    print(utcStr() + ": Downloading delayed trips...")
+    print(timeStr() + ": Downloading delayed trips...")
     feed = gtfs_realtime_pb2.FeedMessage()
     req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
     f = open("credentials.txt", 'r')
@@ -37,7 +37,7 @@ def download_delayed_trips(data_dir):
 
 
     pickle.dump(trips, open(data_dir + "/" + time.strftime("%H%M%S", trips.time_started) + ".pickle", "wb" ))
-    print(utcStr() + ": Found " + str(len(trips.trip_updates)) + " trips")
+    print(timeStr() + ": Found " + str(len(trips.trip_updates)) + " trips")
 
 if __name__== "__main__":
     data_dir = "data/" + time.strftime("%Y%m%d", time.localtime())
