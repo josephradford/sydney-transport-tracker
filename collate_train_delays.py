@@ -7,12 +7,17 @@ from progress.bar import Bar
 def merge_trips(old_trip, new_trip):
     if old_trip.trip_id != new_trip.trip_id:
         return old_trip
+    if old_trip.timestamp == new_trip.timestamp:
+        # no updates
+        return old_trip
+
     for new_stop_time_update in new_trip.stop_time_updates:
         foundStop = False
         for old_stop_time_update in old_trip.stop_time_updates:
             if old_stop_time_update.stop_id == new_stop_time_update.stop_id:
                 # take the new one for now
-                old_stop_time_update = new_stop_time_update
+                if old_stop_time_update != new_stop_time_update:
+                    old_stop_time_update = new_stop_time_update
                 foundStop = True
                 break
         if not foundStop:
@@ -21,7 +26,6 @@ def merge_trips(old_trip, new_trip):
 def collate_train_delays(data_dir):
     files = os.listdir(data_dir)
     merged_trips = []
-    trips = NetworkTrips()
 
     bar = Bar('Merging files', max=len(files))
 
