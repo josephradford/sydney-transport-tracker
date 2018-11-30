@@ -11,6 +11,8 @@ def run_downloads():
     global data_dir
     global analysed_today
     # loop from 4am to 2am
+    s.enter(60, 1, run_downloads)
+    
     hour = time.localtime().tm_hour
 
     if hour > 4:
@@ -39,7 +41,6 @@ def run_downloads():
     # analyse results after results are parsed
 
     # exit application (or sleep until 4am)
-    s.enter(60, 1, run_downloads)
 
 
 if __name__== "__main__":
