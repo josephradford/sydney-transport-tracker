@@ -5,13 +5,15 @@ import sched, time, os
     
 s = sched.scheduler(time.time, time.sleep)
 data_dir = "data/" + time.strftime("%Y%m%d", time.localtime())
+analysed_today = False
 
 def run_downloads():
+    global data_dir
+    global analysed_today
     # loop from 4am to 2am
     hour = time.localtime().tm_hour
 
     if hour > 4:
-        data_dir = "data/" + time.strftime("%Y%m%d", time.localtime())
         download_delayed_trips(data_dir)
         analysed_today = False
     else:
