@@ -36,6 +36,9 @@ def collate_train_delays(data_dir):
         except:
             continue # next file
         
+        if not hasattr(trips, 'trip_updates'):
+            continue
+
         for new_trip in trips.trip_updates:
             foundTrip = False
             for merged_trip in merged_trips:
