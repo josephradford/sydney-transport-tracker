@@ -19,6 +19,7 @@ def merge_trips(old_trip, new_trip):
                 #if old_stop_time_update != new_stop_time_update:
                 old_stop_time_update = new_stop_time_update
                 foundStop = True
+                old_trip.timestamp = new_trip.timestamp
                 break
         if not foundStop:
             old_trip.stop_time_updates.append(new_stop_time_update)
