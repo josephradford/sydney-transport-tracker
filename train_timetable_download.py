@@ -2,6 +2,7 @@ import urllib
 import pickle
 import time
 import os
+import shutil
 
 import requests, zipfile, io
 
@@ -15,32 +16,22 @@ def download_timetable(data_dir):
     apikey = f.read()
 
     url = 'https://api.transport.nsw.gov.au/v1/publictransport/timetables/complete/gtfs'
-    headers = {'Authorization' : 'apikey ' + apikey}
 
     req = urllib.request.Request(url)
     req.add_header('Authorization', 'apikey ' + apikey)
     response = urllib.request.urlopen(req)
 
     file_name = data_dir + "/gtfs_static.zip"
-    with open(file_name, "wb") as f:
-        while (not response.fp.closed and response.fp.readable()):
-            content = response.fp.read(4096)
-
-            if len(content) > 0:
-                f.write(content)
-            else:
-                print("no content")
-                response.fp.close()
-            
-
-    print(response)
+    # Download the file from `url` and save it locally under `file_name`:
+    with urllib.request.urlopen(req) as response, open(file_name, 'wb') as out_file:
+        shutil.copyfileobj(response, out_file)
 
 def unzip_timetable(data_dir):
     file_name = data_dir + "/gtfs_static.zip"
     with open(file_name, "rb") as f:
-        z = zipfile.ZipFile(io.BytesIO(f.readAll()))
+        z = zipfile.ZipFile(io.BytesIO(f.read()))
     
-    z.extractall()
+    z.extractall(path=data_dir)
 
 
 if __name__== "__main__":
