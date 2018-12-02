@@ -65,7 +65,7 @@ def create_real_timetable(data_dir, date_of_analysis):
     data_dir = data_dir + date_of_analysis
 
     # load the static timetable into a data frame
-    df_stop_times = pd.read_csv(data_dir + '/stop_times.txt', header=0, encoding='utf-8-sig')
+    df_stop_times = pd.read_csv(data_dir + '/stop_times.txt', header=0, encoding='utf-8-sig', dtype={'stop_id': str})
        
     # load the trip ids of that actual trips that happend on this day
     df_trips = pd.read_pickle(data_dir + '/trips_' + date_of_analysis + '.pickle')
@@ -93,7 +93,7 @@ def create_real_timetable(data_dir, date_of_analysis):
             # some of these values might be 24:00, 25:00 etc to signfiy next day
 
             idx = df_stop_times[(df_stop_times['trip_id'] == trip.trip_id) &
-                                (df_stop_times['stop_id'] == int(stop_time_update.stop_id))].index
+                                (df_stop_times['stop_id'] == stop_time_update.stop_id)].index
             if idx.empty:
                 # it shouldn't be
                continue
