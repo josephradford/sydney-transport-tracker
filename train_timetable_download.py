@@ -15,19 +15,19 @@ def download_timetable(data_dir):
     f = open("credentials.txt", 'r')
     apikey = f.read()
 
-    url = 'https://api.transport.nsw.gov.au/v1/publictransport/timetables/complete/gtfs'
+    url = 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains'
 
     req = urllib.request.Request(url)
     req.add_header('Authorization', 'apikey ' + apikey)
     response = urllib.request.urlopen(req)
 
-    file_name = data_dir + "/gtfs_static.zip"
+    file_name = data_dir + "/gtfs_schedule_sydneytrains.zip"
     # Download the file from `url` and save it locally under `file_name`:
     with urllib.request.urlopen(req) as response, open(file_name, 'wb') as out_file:
         shutil.copyfileobj(response, out_file)
 
 def unzip_timetable(data_dir):
-    file_name = data_dir + "/gtfs_static.zip"
+    file_name = data_dir + "/gtfs_schedule_sydneytrains.zip"
     with open(file_name, "rb") as f:
         z = zipfile.ZipFile(io.BytesIO(f.read()))
     
