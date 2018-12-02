@@ -111,7 +111,8 @@ def create_real_timetable(data_dir, date_of_analysis):
 
     bar.finish()
 
-    df_stop_times.to_csv('test.csv')
+    df_stop_times.to_csv(data_dir + "/timetable_with_delays.csv")
+    df_stop_times.to_pickle(data_dir + "/timetable_with_delays.pickle")
 
 def update_time(date_of_analysis, time_str, delay_val):
     try:
