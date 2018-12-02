@@ -1,13 +1,9 @@
 import pickle
 import time
 from trip_objects import *
-import os
 from progress.bar import Bar
 import csv
-import calendar
-import datetime
 import pandas as pd
-import numpy as np
 
 class RouteStats:
     def __init__(self, route_id):
@@ -37,10 +33,10 @@ def analyse_by_route(data_dir, date_of_analysis):
     for trip in trip_delays:
         # check to see trip was supposed to happen
         if not trip.trip_id in df_trips['trip_id'].values:
-            print("Trip " + trip.trip_id + " was not supposed to run today!")
+            #print("Trip " + trip.trip_id + " was not supposed to run today!")
             continue
-        if trip.schedule_relationship != 0:
-            print(trip)
+        #if trip.schedule_relationship != 0:
+        #    print(trip)
         routeFound = False
         for route in routes:
             if trip.route_id == route.route_id:
@@ -76,5 +72,4 @@ def analyse_by_route(data_dir, date_of_analysis):
 if __name__== "__main__":
     data_dir = "data/"
     date_str = time.strftime("%Y%m%d", time.localtime())
-
     analyse_by_route(data_dir, date_str)

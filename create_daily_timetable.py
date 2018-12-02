@@ -1,26 +1,9 @@
 import pickle
 import time
 from trip_objects import *
-import os
-from progress.bar import Bar
 import csv
 import calendar
-import datetime
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
-class RouteStats:
-    def __init__(self, route_id):
-        self.trips = []
-        self.route_id = route_id
-
-    def delays(self):
-        retval = 0
-        for trip in self.trips:
-            if trip.is_delayed():
-                retval += 1
-        return retval
 
 def create_daily_timetable(data_dir, date_of_analysis):
     data_dir = data_dir + date_of_analysis
@@ -35,9 +18,7 @@ def create_daily_timetable(data_dir, date_of_analysis):
         csv_reader = csv.DictReader(csv_file)
         line_count = 0
         for row in csv_reader:
-            if line_count == 0:
-                print(f'Column names are {", ".join(row)}')
-            else:
+            if line_count != 0:
                 if row[day_of_analysis] == '1':
                     start_date = time.strptime(row['start_date'], "%Y%m%d")
                     end_date = time.strptime(row['end_date'], "%Y%m%d")
@@ -57,5 +38,4 @@ def create_daily_timetable(data_dir, date_of_analysis):
 if __name__== "__main__":
     data_dir = "data/"
     date_str = time.strftime("%Y%m%d", time.localtime())
-
     create_daily_timetable(data_dir, date_str)
