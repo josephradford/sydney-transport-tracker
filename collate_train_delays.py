@@ -35,6 +35,7 @@ def collate_train_delays(data_dir):
     bar = Bar('Merging files', max=len(files))
 
     for delay_data_file in files:
+        bar.next()
         try:
             trips = pickle.load(open(data_dir + "/" + delay_data_file, "rb" ))
         except:
@@ -53,8 +54,6 @@ def collate_train_delays(data_dir):
 
             if foundTrip == False:
                 merged_trips.append(new_trip)
-
-        bar.next()
 
     bar.finish()
 
