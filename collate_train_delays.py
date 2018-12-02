@@ -25,6 +25,7 @@ def merge_trips(old_trip, new_trip):
             old_trip.stop_time_updates.append(new_stop_time_update)
     
 def collate_train_delays(data_dir):
+    print("Merging files in " + data_dir)
     files = os.listdir(data_dir)
     merged_trips = []
 

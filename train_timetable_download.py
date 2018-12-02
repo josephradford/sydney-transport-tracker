@@ -11,7 +11,7 @@ def timeStr():
     return time.strftime("%Y-%m-%d %H:%M:%S", ts)
 
 def download_timetable(data_dir):
-    print(timeStr() + ": Downloading today's timetable...")
+    print(timeStr() + ": Downloading today's timetable to " + data_dir + "...")
     f = open("credentials.txt", 'r')
     apikey = f.read()
 

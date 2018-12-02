@@ -2,6 +2,8 @@ import csv
 import time
 
 def parse_stop_times(data_dir):
+    print("Parsing timetable in " + data_dir)
+
     with open(data_dir + '/trips.txt', mode='r', encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
         line_count = 0

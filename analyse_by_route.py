@@ -17,6 +17,7 @@ class RouteStats:
         return retval
 
 def analyse_by_route(data_dir):
+    print("Analysing routes in " + data_dir)
     try:
         trips = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
     except:
