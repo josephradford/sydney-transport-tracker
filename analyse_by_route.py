@@ -3,6 +3,7 @@ import time
 from trip_objects import *
 import os
 from progress.bar import Bar
+import csv
 
 class RouteStats:
     def __init__(self, route_id):
@@ -18,6 +19,24 @@ class RouteStats:
 
 def analyse_by_route(data_dir):
     print("Analysing routes in " + data_dir)
+
+    route_trips_dict = {}
+
+    with open(data_dir + '/trips.txt', mode='r', encoding='utf-8-sig') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                print(f'Column names are {", ".join(row)}')
+            else:
+                if row['route_id'] in route_trips_dict:
+                    route_trips_dict[row['route_id']] = route_trips_dict[row['route_id']] + 1
+                else:
+                    route_trips_dict[row['route_id']] = 1
+            line_count += 1
+
+    print(f'Processed {line_count} lines.')
+
     try:
         trips = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
     except:
@@ -42,7 +61,7 @@ def analyse_by_route(data_dir):
     bar.finish()
 
     for route in routes:
-        print("Route " + route.route_id + " " + str(route.delays()) + " delays from " + str(len(route.trips)))
+        print("Route " + route.route_id + " " + str(route.delays()) + " delays from " + str(route_trips_dict[route.route_id]))
 
     print("Analysed " + str(len(trips)) + " trips")
 
