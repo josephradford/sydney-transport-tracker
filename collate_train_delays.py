@@ -122,7 +122,9 @@ def update_time(date_of_analysis, time_str, delay_val):
 
 
 if __name__== "__main__":
-    data_dir = "data/" + time.strftime("%Y%m%d", time.localtime())
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-    collate_train_delays(data_dir)
+    data_dir = "data/"
+    date_str = time.strftime("%Y%m%d", time.localtime())
+    if not os.path.exists(data_dir + date_str):
+        os.makedirs(data_dir + date_str)
+    create_real_timetable(data_dir, date_str)
+    #collate_train_delays(data_dir + date_str)
