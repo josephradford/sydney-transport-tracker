@@ -4,6 +4,7 @@ from trip_objects import *
 from progress.bar import Bar
 import csv
 import pandas as pd
+import numpy as np
 
 class RouteStats:
     def __init__(self, route_id):
