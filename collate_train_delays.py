@@ -83,6 +83,7 @@ def create_real_timetable(data_dir, date_of_analysis):
 
     bar = Bar('Analyse trips', max=len(trip_delays))
     for trip in trip_delays:
+        bar.next()
         if not trip.is_delayed() and trip.overall_schedule_relationship() == 0:
             continue
         if not trip.trip_id in df_trips['trip_id'].values:
@@ -101,13 +102,20 @@ def create_real_timetable(data_dir, date_of_analysis):
             actual_arrival_time = update_time(date_of_analysis, df_row['arrival_time'].item(), stop_time_update.arrival_delay)
             actual_departure_time = update_time(date_of_analysis, df_row['departure_time'].item(), stop_time_update.departure_delay)
 
-            df_row.loc[0,'actual_arrival_time'] = actual_arrival_time
-            df_row.loc[0,'actual_departure_time'] = actual_departure_time
-
-            df_row.loc[0,'schedule_relationship'] = stop_time_update.schedule_relationship
-
+            df_stop_times.loc[(df_stop_times['trip_id'] == 'trip_id') & 
+                              (df_stop_times['stop_id'] == int(stop_time_update.stop_id)), 
+                              'actual_arrival_time'] = actual_arrival_time
+                              
+            df_stop_times.loc[(df_stop_times['trip_id'] == 'trip_id') & 
+                              (df_stop_times['stop_id'] == int(stop_time_update.stop_id)), 
+                              'actual_departure_time'] = actual_departure_time
+                              
+            df_stop_times.loc[(df_stop_times['trip_id'] == 'trip_id') & 
+                              (df_stop_times['stop_id'] == int(stop_time_update.stop_id)), 
+                              'schedule_relationship'] = stop_time_update.schedule_relationship
             #print(df_row)
-        bar.next()
+
+        print(df_trip_rows)
 
     bar.finish()
 
