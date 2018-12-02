@@ -4,6 +4,8 @@ from trip_objects import *
 import os
 from progress.bar import Bar
 import csv
+import calendar
+import datetime
 
 class RouteStats:
     def __init__(self, route_id):
@@ -17,10 +19,30 @@ class RouteStats:
                 retval += 1
         return retval
 
-def analyse_by_route(data_dir):
+def analyse_by_route(data_dir, date_of_analysis):
+    data_dir = data_dir + date_of_analysis
     print("Analysing routes in " + data_dir)
 
+    my_date = time.strptime(date_of_analysis, "%Y%m%d")
+    day_of_analysis = str.lower(calendar.day_name[my_date.tm_wday])
+
     route_trips_dict = {}
+
+    # create list of services that run on this day
+    todays_services = []
+    with open(data_dir + '/calendar.txt', mode='r', encoding='utf-8-sig') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        line_count = 0
+        for row in csv_reader:
+            if line_count == 0:
+                print(f'Column names are {", ".join(row)}')
+            else:
+                if row[day_of_analysis] == '1':
+                    start_date = time.strptime(row['start_date'], "%Y%m%d")
+                    end_date = time.strptime(row['end_date'], "%Y%m%d")
+                    if my_date >= start_date and my_date <= end_date:
+                        todays_services.append(row['service_id'])
+            line_count += 1
 
     with open(data_dir + '/trips.txt', mode='r', encoding='utf-8-sig') as csv_file:
         csv_reader = csv.DictReader(csv_file)
@@ -29,10 +51,11 @@ def analyse_by_route(data_dir):
             if line_count == 0:
                 print(f'Column names are {", ".join(row)}')
             else:
-                if row['route_id'] in route_trips_dict:
-                    route_trips_dict[row['route_id']] = route_trips_dict[row['route_id']] + 1
-                else:
-                    route_trips_dict[row['route_id']] = 1
+                if row['service_id'] in todays_services:
+                    if row['route_id'] in route_trips_dict:
+                        route_trips_dict[row['route_id']] = route_trips_dict[row['route_id']] + 1
+                    else:
+                        route_trips_dict[row['route_id']] = 1
             line_count += 1
 
     print(f'Processed {line_count} lines.')
@@ -46,6 +69,8 @@ def analyse_by_route(data_dir):
     bar = Bar('Analyse trips', max=len(trips))
     routes = []
     for trip in trips:
+        if trip.schedule_relationship != 0:
+            print(trip)
         routeFound = False
         for route in routes:
             if trip.route_id == route.route_id:
@@ -67,7 +92,7 @@ def analyse_by_route(data_dir):
 
 
 if __name__== "__main__":
-    data_dir = "data/" + time.strftime("%Y%m%d", time.localtime())
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-    analyse_by_route(data_dir)
+    data_dir = "data/"
+    date_str = time.strftime("%Y%m%d", time.localtime())
+
+    analyse_by_route(data_dir, date_str)
