@@ -6,6 +6,8 @@ from progress.bar import Bar
 import csv
 import calendar
 import datetime
+import pandas as pd
+import numpy as np
 
 class RouteStats:
     def __init__(self, route_id):
@@ -23,52 +25,20 @@ def analyse_by_route(data_dir, date_of_analysis):
     data_dir = data_dir + date_of_analysis
     print("Analysing routes in " + data_dir)
 
-    my_date = time.strptime(date_of_analysis, "%Y%m%d")
-    day_of_analysis = str.lower(calendar.day_name[my_date.tm_wday])
-
-    route_trips_dict = {}
-
-    # create list of services that run on this day
-    todays_services = []
-    with open(data_dir + '/calendar.txt', mode='r', encoding='utf-8-sig') as csv_file:
-        csv_reader = csv.DictReader(csv_file)
-        line_count = 0
-        for row in csv_reader:
-            if line_count == 0:
-                print(f'Column names are {", ".join(row)}')
-            else:
-                if row[day_of_analysis] == '1':
-                    start_date = time.strptime(row['start_date'], "%Y%m%d")
-                    end_date = time.strptime(row['end_date'], "%Y%m%d")
-                    if my_date >= start_date and my_date <= end_date:
-                        todays_services.append(row['service_id'])
-            line_count += 1
-
-    with open(data_dir + '/trips.txt', mode='r', encoding='utf-8-sig') as csv_file:
-        csv_reader = csv.DictReader(csv_file)
-        line_count = 0
-        for row in csv_reader:
-            if line_count == 0:
-                print(f'Column names are {", ".join(row)}')
-            else:
-                if row['service_id'] in todays_services:
-                    if row['route_id'] in route_trips_dict:
-                        route_trips_dict[row['route_id']] = route_trips_dict[row['route_id']] + 1
-                    else:
-                        route_trips_dict[row['route_id']] = 1
-            line_count += 1
-
-    print(f'Processed {line_count} lines.')
-
     try:
-        trips = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
+        df_trips = pd.read_pickle(data_dir + '/trips_' + date_of_analysis + '.pickle')
+        trip_delays = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
     except:
         return
 
     # populate routes
-    bar = Bar('Analyse trips', max=len(trips))
+    bar = Bar('Analyse trips', max=len(trip_delays))
     routes = []
-    for trip in trips:
+    for trip in trip_delays:
+        # check to see trip was supposed to happen
+        if not trip.trip_id in df_trips['trip_id'].values:
+            print("Trip " + trip.trip_id + " was not supposed to run today!")
+            continue
         if trip.schedule_relationship != 0:
             print(trip)
         routeFound = False
@@ -85,10 +55,22 @@ def analyse_by_route(data_dir, date_of_analysis):
 
     bar.finish()
 
+    most_delays = 0
+    most_delayed_route = RouteStats('nothing')
     for route in routes:
-        print("Route " + route.route_id + " " + str(route.delays()) + " delays from " + str(route_trips_dict[route.route_id]))
+        num_trips_route_today = len(df_trips[df_trips['route_id'] == route.route_id])
+        if len(route.trips) > num_trips_route_today:
+            print("More trips recorded on realtime than on timetable on route " + route.route_id)
 
-    print("Analysed " + str(len(trips)) + " trips")
+        delay_pc = route.delays() / num_trips_route_today
+        if delay_pc > most_delays:
+            most_delays = delay_pc
+            most_delayed_route = route
+
+        print("Route " + route.route_id + " " + str(route.delays()) + " delays from " +
+                     str(num_trips_route_today))
+
+    print("Analysed " + str(len(trip_delays)) + " trips")
 
 
 if __name__== "__main__":
