@@ -62,6 +62,8 @@ def create_daily_timetable(data_dir, date_of_analysis):
     # create dataframe that is only this day's trips
     df = pd.read_csv(data_dir + '/trips.txt', header=0, encoding='utf-8-sig')
     df = df[df['service_id'].isin(todays_services)]
+    df = df[~df['route_id'].isin(['RTTA_DEF', 'RTTA_REV'])]
+
    
     df.to_pickle(data_dir + '/trips_' + date_of_analysis + '.pickle')
 
