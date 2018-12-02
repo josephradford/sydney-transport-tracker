@@ -28,7 +28,7 @@ def merge_trips(old_trip, new_trip):
             old_trip.stop_time_updates.append(new_stop_time_update)
     
 def collate_train_delays(data_dir):
-    print("Merging files in " + data_dir)
+    print("Merging delays in " + data_dir)
     files = os.listdir(data_dir)
     merged_trips = []
 
@@ -62,6 +62,8 @@ def collate_train_delays(data_dir):
     print("Found " + str(len(merged_trips)) + " trips")
 
 def create_real_timetable(data_dir, date_of_analysis):
+    print("Creating real timetable for " + date_of_analysis + " in " + data_dir)
+
     data_dir = data_dir + date_of_analysis
 
     # load the static timetable into a data frame
@@ -113,6 +115,7 @@ def create_real_timetable(data_dir, date_of_analysis):
 
     df_stop_times.to_csv(data_dir + "/timetable_with_delays.csv")
     df_stop_times.to_pickle(data_dir + "/timetable_with_delays.pickle")
+    print("Pickled the real timetable in " + data_dir)
 
 def update_time(date_of_analysis, time_str, delay_val):
     try:
@@ -130,5 +133,5 @@ if __name__== "__main__":
     date_str = time.strftime("%Y%m%d", time.localtime())
     if not os.path.exists(data_dir + date_str):
         os.makedirs(data_dir + date_str)
+    collate_train_delays(data_dir + date_str)
     create_real_timetable(data_dir, date_str)
-    #collate_train_delays(data_dir + date_str)
