@@ -40,6 +40,17 @@ class TripUpdate:
                 return True
         return False
 
+    def overall_schedule_relationship(self):
+        # this attribute should be tracked as items are appended
+        for stop_time_update in self.stop_time_updates:
+            if stop_time_update.schedule_relationship == 3:
+                return 3
+            if stop_time_update.schedule_relationship == 2:
+                return 2
+            if stop_time_update.schedule_relationship == 1:
+                return 1
+        return 0
+
 
 class NetworkTrips:
     def __init__(self):
