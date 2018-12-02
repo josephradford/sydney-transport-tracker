@@ -114,11 +114,14 @@ def create_real_timetable(data_dir, date_of_analysis):
     df_stop_times.to_csv('test.csv')
 
 def update_time(date_of_analysis, time_str, delay_val):
-    delay_val = int(delay_val)
-    original_time = time.mktime(time.strptime(date_of_analysis + time_str, "%Y%m%d%H:%M:%S"))
-    updated_time = original_time + delay_val
-    updated_time = time.localtime(updated_time)
-    return time.strftime("%H:%M:%S", updated_time)
+    try:
+        delay_val = int(delay_val)
+        original_time = time.mktime(time.strptime(date_of_analysis + time_str, "%Y%m%d%H:%M:%S"))
+        updated_time = original_time + delay_val
+        updated_time = time.localtime(updated_time)
+        return time.strftime("%H:%M:%S", updated_time)
+    except:
+        return "Exception"
 
 
 if __name__== "__main__":
