@@ -74,9 +74,10 @@ def create_real_timetable(data_dir, date_of_analysis):
     df_stop_times = df_stop_times[df_stop_times['trip_id'].isin(df_trips['trip_id'])]
 
     # insert actual arrival, actual departure, and cancellation states into dataframe
-    df_stop_times.insert(3, 'actual_arrival_time', 0)
-    df_stop_times.insert(4, 'actual_departure_time', 0)
-    df_stop_times.insert(5, 'schedule_relationship', 0)
+    # mark all as N/A to start with, so we know which things never had real time updates
+    df_stop_times.insert(3, 'actual_arrival_time', 'N/A')
+    df_stop_times.insert(4, 'actual_departure_time', 'N/A')
+    df_stop_times.insert(5, 'schedule_relationship', 'N/A')
 
     # load all delays found on this date
     trip_delays = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
@@ -84,42 +85,33 @@ def create_real_timetable(data_dir, date_of_analysis):
     bar = Bar('Analyse trips', max=len(trip_delays))
     for trip in trip_delays:
         bar.next()
-        if not trip.is_delayed() and trip.overall_schedule_relationship() == 0:
-            continue
         if not trip.trip_id in df_trips['trip_id'].values:
-            print("Trip " + trip.trip_id + " was not supposed to run today!")
+            #print("Trip " + trip.trip_id + " was not supposed to run today!")
             continue
             
-        df_trip_rows = df_stop_times[df_stop_times['trip_id'] == trip.trip_id]
         for stop_time_update in trip.stop_time_updates:
-            df_row = df_trip_rows[df_trip_rows['stop_id'] == int(stop_time_update.stop_id)]
             # some of these values might be 24:00, 25:00 etc to signfiy next day
 
-            if df_row.empty:
+            idx = df_stop_times[(df_stop_times['trip_id'] == trip.trip_id) &
+                                (df_stop_times['stop_id'] == int(stop_time_update.stop_id))].index
+            if idx.empty:
                 # it shouldn't be
-                continue
+               continue
 
-            actual_arrival_time = update_time(date_of_analysis, df_row['arrival_time'].item(), stop_time_update.arrival_delay)
-            actual_departure_time = update_time(date_of_analysis, df_row['departure_time'].item(), stop_time_update.departure_delay)
+            idx = idx.item()
 
-            df_stop_times.loc[(df_stop_times['trip_id'] == 'trip_id') & 
-                              (df_stop_times['stop_id'] == int(stop_time_update.stop_id)), 
-                              'actual_arrival_time'] = actual_arrival_time
-                              
-            df_stop_times.loc[(df_stop_times['trip_id'] == 'trip_id') & 
-                              (df_stop_times['stop_id'] == int(stop_time_update.stop_id)), 
-                              'actual_departure_time'] = actual_departure_time
-                              
-            df_stop_times.loc[(df_stop_times['trip_id'] == 'trip_id') & 
-                              (df_stop_times['stop_id'] == int(stop_time_update.stop_id)), 
-                              'schedule_relationship'] = stop_time_update.schedule_relationship
-            #print(df_row)
+            # calculate the real time
+            actual_arrival_time = update_time(date_of_analysis, df_stop_times.at[idx, 'arrival_time'], stop_time_update.arrival_delay)
+            actual_departure_time = update_time(date_of_analysis, df_stop_times.at[idx, 'departure_time'], stop_time_update.departure_delay)
 
-        print(df_trip_rows)
+            # add the new values to the new columns
+            df_stop_times.at[idx, 'actual_arrival_time'] = actual_arrival_time
+            df_stop_times.at[idx, 'actual_departure_time'] = actual_departure_time
+            df_stop_times.at[idx, 'schedule_relationship'] = stop_time_update.schedule_relationship
 
     bar.finish()
 
-    print(df_stop_times)
+    df_stop_times.to_csv('test.csv')
 
 def update_time(date_of_analysis, time_str, delay_val):
     delay_val = int(delay_val)
