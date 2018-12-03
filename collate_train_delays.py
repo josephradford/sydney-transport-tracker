@@ -120,7 +120,7 @@ def create_real_timetable(data_dir, date_of_analysis):
     df_stop_times.to_pickle(data_dir + "/timetable_with_delays.pickle")
     print("Pickled the real timetable in " + data_dir)
 
-def create_real_trips(data_dir, date_of_analysis):
+def match_delays_with_trips(data_dir, date_of_analysis):
     data_dir = data_dir + date_of_analysis
     print("Creating real trip summaries " + date_of_analysis + " in " + data_dir)
 
@@ -177,7 +177,7 @@ def update_time(date_of_analysis, time_str, delay_val):
 def collate_train_delays_run(data_dir, date_str):
     collate_train_delays(data_dir + date_str)
     create_real_timetable(data_dir, date_str)
-    create_real_trips(data_dir, date_str)
+    match_delays_with_trips(data_dir, date_str)
 
 
 if __name__== "__main__":
