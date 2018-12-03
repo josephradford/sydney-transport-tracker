@@ -23,6 +23,11 @@ Do *not* put a newline in the file!
 ## Deployment
 The target platform is a Raspberry Pi running Raspbian.
 
+## To do
+The timetable downloaded represents stop times for late night services with hours greater than 23.
+For example, if a train starts at 23:55 and has a stop 10 minutes later, it will be at 24:05. 
+This is currently not handled. In this situation, it will be ignored.
+
 ## Acknowledgments
 * [Transport for NSW Open Data API](https://opendata.transport.nsw.gov.au)
 * [General Transit Feed Specification](https://developers.google.com/transit/)
