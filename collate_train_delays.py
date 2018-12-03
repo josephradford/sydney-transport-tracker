@@ -76,9 +76,11 @@ def create_real_timetable(data_dir, date_of_analysis):
 
     # insert actual arrival, actual departure, and cancellation states into dataframe
     # mark all as N/A to start with, so we know which things never had real time updates
+    df_stop_times.insert(2, 'arrival_delay', 'N/A')
     df_stop_times.insert(3, 'actual_arrival_time', 'N/A')
-    df_stop_times.insert(4, 'actual_departure_time', 'N/A')
-    df_stop_times.insert(5, 'schedule_relationship', 'N/A')
+    df_stop_times.insert(5, 'departure_delay', 'N/A')
+    df_stop_times.insert(6, 'actual_departure_time', 'N/A')
+    df_stop_times.insert(7, 'schedule_relationship', 'N/A')
 
     # load all delays found on this date
     trip_delays = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
@@ -106,7 +108,10 @@ def create_real_timetable(data_dir, date_of_analysis):
             actual_departure_time = update_time(date_of_analysis, df_stop_times.at[idx, 'departure_time'], stop_time_update.departure_delay)
 
             # add the new values to the new columns
+            
+            df_stop_times.at[idx, 'arrival_delay'] = stop_time_update.arrival_delay
             df_stop_times.at[idx, 'actual_arrival_time'] = actual_arrival_time
+            df_stop_times.at[idx, 'departure_delay'] = stop_time_update.departure_delay
             df_stop_times.at[idx, 'actual_departure_time'] = actual_departure_time
             df_stop_times.at[idx, 'schedule_relationship'] = stop_time_update.schedule_relationship
 
