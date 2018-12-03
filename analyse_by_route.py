@@ -5,6 +5,7 @@ from progress.bar import Bar
 import csv
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 class RouteStats:
     def __init__(self, route_id):
@@ -17,6 +18,30 @@ class RouteStats:
             if trip.is_delayed():
                 retval += 1
         return retval
+
+def analyse_by_stop(data_dir, date_of_analysis, stop_id):
+    data_dir = data_dir + date_of_analysis
+    print("Analysing stop " + stop_id + " in " + data_dir)
+
+    try:
+        df_trips = pd.read_pickle(data_dir + "/timetable_with_delays.pickle")
+    except:
+        return
+
+    am_start = datetime.strptime(date_of_analysis + "0700", "%Y%m%d%H%M")
+    am_end   = datetime.strptime(date_of_analysis + "0900", "%Y%m%d%H%M")
+    pm_start = datetime.strptime(date_of_analysis + "1600", "%Y%m%d%H%M")
+    pm_end   = datetime.strptime(date_of_analysis + "1830", "%Y%m%d%H%M")
+
+    df_trips = df_trips[(df_trips['stop_id'] == stop_id)]
+    df_trips = df_trips[(df_trips['departure_delay'] != 'N/A')]
+    df_trips = df_trips[((df_trips['departure_time'] >= am_start) &
+                         (df_trips['departure_time'] <= am_end)) | 
+                        ((df_trips['departure_time'] >= pm_start) &
+                         (df_trips['departure_time'] <= pm_end))]
+    
+    print(df_trips)
+    
 
 def analyse_by_route(data_dir, date_of_analysis):
     data_dir = data_dir + date_of_analysis
@@ -73,4 +98,5 @@ def analyse_by_route(data_dir, date_of_analysis):
 if __name__== "__main__":
     data_dir = "data/"
     date_str = time.strftime("%Y%m%d", time.localtime())
+    analyse_by_stop(data_dir, date_str, '2131123')
     analyse_by_route(data_dir, date_str)
