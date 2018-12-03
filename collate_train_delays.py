@@ -61,9 +61,8 @@ def collate_train_delays(data_dir):
     print("Found " + str(len(merged_trips)) + " trips")
 
 def create_real_timetable(data_dir, date_of_analysis):
-    print("Creating real timetable for " + date_of_analysis + " in " + data_dir)
-
     data_dir = data_dir + date_of_analysis
+    print("Creating real timetable for " + date_of_analysis + " in " + data_dir)
 
     # load the static timetable into a data frame
     df_stop_times = pd.read_csv(data_dir + '/stop_times.txt', header=0, encoding='utf-8-sig', dtype={'stop_id': str})
