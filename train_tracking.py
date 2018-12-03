@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 from train_delay_download import *
 from collate_train_delays import collate_train_delays_run
 from analyse_by_route import *
