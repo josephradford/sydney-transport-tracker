@@ -4,7 +4,7 @@ from train_delay_download import *
 from collate_train_delays import collate_train_delays_run
 from analyse_by_route import *
 from static_train_timetable import static_train_timetable_run
-import sched, time, os
+import sched, time, os, sys
     
 s = sched.scheduler(time.time, time.sleep)
 data_dir = "data/"
@@ -55,6 +55,8 @@ def run_downloads():
 
 
 if __name__== "__main__":
+    # run in own directory
+    os.chdir(os.path.dirname(sys.argv[0]))
     state = 'prepare'
     s.enter(1, 1, run_downloads)
     s.run()
