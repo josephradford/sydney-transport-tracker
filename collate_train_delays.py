@@ -120,6 +120,50 @@ def create_real_timetable(data_dir, date_of_analysis):
     df_stop_times.to_pickle(data_dir + "/timetable_with_delays.pickle")
     print("Pickled the real timetable in " + data_dir)
 
+def create_real_trips(data_dir, date_of_analysis):
+    data_dir = data_dir + date_of_analysis
+    print("Creating real trip summaries " + date_of_analysis + " in " + data_dir)
+
+    # load the trip ids of that actual trips that happend on this day
+    df_trips = pd.read_pickle(data_dir + '/trips_' + date_of_analysis + '.pickle')
+
+    # insert actual arrival, actual departure, and cancellation states into dataframe
+    # mark all as N/A to start with, so we know which things never had real time updates
+    df_trips.insert(4, 'maximum_arrival_delay', 'N/A')
+    df_trips.insert(5, 'average_arrival_delay', 'N/A')
+    df_trips.insert(7, 'maximum_departure_delay', 'N/A')
+    df_trips.insert(8, 'average_departure_delay', 'N/A')
+    df_trips.insert(9, 'schedule_relationship', 'N/A')
+	
+    # load all delays found on this date
+    trip_delays = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
+
+    bar = Bar('Analyse trips', max=len(trip_delays))
+    for trip in trip_delays:
+        bar.next()
+        if not trip.trip_id in df_trips['trip_id'].values:
+            #print("Trip " + trip.trip_id + " was not supposed to run today!")
+            continue
+            
+        idx = df_trips[(df_trips['trip_id'] == trip.trip_id)].index
+        if idx.empty:
+            # it shouldn't be
+            continue
+
+        idx = idx.item()
+
+        df_trips.at[idx, 'maximum_arrival_delay'] = trip.maximum_arrival_delay()
+        df_trips.at[idx, 'average_arrival_delay'] = trip.average_arrival_delay()
+        df_trips.at[idx, 'maximum_departure_delay'] = trip.maximum_departure_delay()
+        df_trips.at[idx, 'average_departure_delay'] = trip.average_departure_delay()
+        df_trips.at[idx, 'schedule_relationship'] = trip.overall_schedule_relationship()
+
+    bar.finish()
+
+    df_trips.to_csv(data_dir + "/trips_with_delays.csv")
+    df_trips.to_pickle(data_dir + "/trips_with_delays.pickle")
+    print("Pickled the real trip summaries in " + data_dir)
+
 def update_time(date_of_analysis, time_str, delay_val):
     try:
         delay_val = int(delay_val)
@@ -133,6 +177,7 @@ def update_time(date_of_analysis, time_str, delay_val):
 def collate_train_delays_run(data_dir, date_str):
     collate_train_delays(data_dir + date_str)
     create_real_timetable(data_dir, date_str)
+    create_real_trips(data_dir, date_str)
 
 
 if __name__== "__main__":

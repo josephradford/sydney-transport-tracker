@@ -40,6 +40,46 @@ class TripUpdate:
                 return True
         return False
 
+    def cumulative_arrival_delay(self):
+        # this attribute should be tracked as items are appended
+        retval = 0
+        for stop_time_update in self.stop_time_updates:
+            if stop_time_update.arrival_delay > 0:
+                retval += stop_time_update.arrival_delay
+        return retval
+
+    def maximum_arrival_delay(self):
+        # this attribute should be tracked as items are appended
+        retval = 0
+        for stop_time_update in self.stop_time_updates:
+            if stop_time_update.arrival_delay > retval:
+                retval = stop_time_update.arrival_delay
+        return retval
+
+    def average_arrival_delay(self):
+        # this attribute should be tracked as items are appended
+        return self.cumulative_arrival_delay() / len(self.stop_time_updates)
+        
+    def cumulative_departure_delay(self):
+        # this attribute should be tracked as items are appended
+        retval = 0
+        for stop_time_update in self.stop_time_updates:
+            if stop_time_update.departure_delay > 0:
+                retval += stop_time_update.departure_delay
+        return retval
+
+    def maximum_departure_delay(self):
+        # this attribute should be tracked as items are appended
+        retval = 0
+        for stop_time_update in self.stop_time_updates:
+            if stop_time_update.departure_delay > retval:
+                retval = stop_time_update.departure_delay
+        return retval
+        
+    def average_departure_delay(self):
+        # this attribute should be tracked as items are appended
+        return self.cumulative_departure_delay() / len(self.stop_time_updates)
+
     def overall_schedule_relationship(self):
         # this attribute should be tracked as items are appended
         for stop_time_update in self.stop_time_updates:
