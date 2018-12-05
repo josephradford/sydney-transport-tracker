@@ -58,5 +58,6 @@ docs/_build/
 target/
 
 credentials.txt
-data/
+/data
 venv3/
+*.env
