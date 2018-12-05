@@ -4,6 +4,7 @@ import time
 import os
 from dotenv import load_dotenv
 import logging
+import sys
 
 
 def download_delayed_trips(data_dir):
@@ -22,6 +23,8 @@ def download_delayed_trips(data_dir):
 
 
 if __name__ == "__main__":
+    # run in own directory
+    os.chdir(os.path.dirname(sys.argv[0]))
     load_dotenv()
     destination_data_dir = "../../data/raw/" + time.strftime("%Y%m%d", time.localtime())
     if not os.path.exists(destination_data_dir):
