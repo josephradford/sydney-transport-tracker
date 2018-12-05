@@ -41,7 +41,7 @@ def download_delayed_trips(data_dir):
 
 if __name__== "__main__":
     load_dotenv()
-    data_dir = "data/" + time.strftime("%Y%m%d", time.localtime())
+    data_dir = "../../data/" + time.strftime("%Y%m%d", time.localtime())
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
     download_delayed_trips(data_dir)
