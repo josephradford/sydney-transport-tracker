@@ -25,6 +25,7 @@ if __name__ == "__main__":
     load_dotenv()
     destination_data_dir = "../../data/raw/" + time.strftime("%Y%m%d", time.localtime())
     if not os.path.exists(destination_data_dir):
+        os.chmod("../../", 0o777)
         os.makedirs(destination_data_dir)
     logging.basicConfig(filename='../../data/train_delay_download.log', level=logging.INFO,
                         format='%(asctime)s %(message)s')
