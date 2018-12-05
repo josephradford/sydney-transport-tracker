@@ -21,7 +21,20 @@ You will have to register to get the key.
 Do *not* put a newline in the file!
 
 ## Deployment
-The target platform is a Raspberry Pi running Raspbian.
+The target platform is a Raspberry Pi running Raspbian. These steps assume you have cloned this directory to the home directory. 
+
+Create a credentials.txt file as described in the previous section. To ensure that it does not have a new line,
+```
+truncate -s -1 credentials.txt
+```
+This is very annoying and the credentials.txt format will be fixed to allow a new line at the end.
+
+Set up a cron job to start the script on startup
+```
+@reboot python3 /home/pi/sydney-transport-tracker/train_tracking.py &
+```
+
+Do *not* use /etc/rc.local. I find that it sometimes starts the script while pi is still in UTC which will ruin your day.
 
 ## To do
 The timetable downloaded represents stop times for late night services with hours greater than 23.
