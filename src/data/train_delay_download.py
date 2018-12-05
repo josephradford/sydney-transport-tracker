@@ -1,9 +1,11 @@
 from google.transit import gtfs_realtime_pb2
-import urllib
+import urllib.request
 import pickle
 import time
 from trip_objects import *
 import os
+from dotenv import load_dotenv
+
 
 def timeStr():
     ts = time.localtime()
@@ -13,8 +15,7 @@ def download_delayed_trips(data_dir):
     print(timeStr() + ": Downloading delayed trips...")
     feed = gtfs_realtime_pb2.FeedMessage()
     req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
-    f = open("credentials.txt", 'r')
-    apikey = f.read()
+    apikey = os.getenv("API_KEY")
     req.add_header('Authorization', 'apikey ' + apikey)
     response = urllib.request.urlopen(req)
     feed.ParseFromString(response.read())
@@ -40,6 +41,7 @@ def download_delayed_trips(data_dir):
     print(timeStr() + ": Found " + str(len(trips.trip_updates)) + " trips")
 
 if __name__== "__main__":
+    load_dotenv()
     data_dir = "data/" + time.strftime("%Y%m%d", time.localtime())
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
