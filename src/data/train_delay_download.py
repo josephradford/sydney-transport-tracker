@@ -5,18 +5,17 @@ import time
 from trip_objects import *
 import os
 from dotenv import load_dotenv
+import logging
+logging.basicConfig(filename='../../data/train_delay_download.log', level=logging.INFO,
+                    format='%(asctime)s %(message)s')
 
-
-def timeStr():
-    ts = time.localtime()
-    return time.strftime("%Y-%m-%d %H:%M:%S", ts)
 
 def download_delayed_trips(data_dir):
-    print(timeStr() + ": Downloading delayed trips...")
+    logging.info("Downloading delayed trips...")
     feed = gtfs_realtime_pb2.FeedMessage()
     req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
-    apikey = os.getenv("API_KEY")
-    req.add_header('Authorization', 'apikey ' + apikey)
+    api_key = os.getenv("API_KEY")
+    req.add_header('Authorization', 'apikey ' + api_key)
     response = urllib.request.urlopen(req)
     feed.ParseFromString(response.read())
     trips = NetworkTrips()
@@ -36,9 +35,9 @@ def download_delayed_trips(data_dir):
             
             trips.trip_updates.append(trip_update)
 
-
     pickle.dump(trips, open(data_dir + "/" + time.strftime("%H%M%S", trips.time_started) + ".pickle", "wb" ))
-    print(timeStr() + ": Found " + str(len(trips.trip_updates)) + " trips")
+    logging.info("Found " + str(len(trips.trip_updates)) + " trips")
+
 
 if __name__== "__main__":
     load_dotenv()
