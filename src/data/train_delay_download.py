@@ -4,8 +4,6 @@ import time
 import os
 from dotenv import load_dotenv
 import logging
-logging.basicConfig(filename='../../data/train_delay_download.log', level=logging.INFO,
-                    format='%(asctime)s %(message)s')
 
 
 def download_delayed_trips(data_dir):
@@ -28,4 +26,6 @@ if __name__ == "__main__":
     destination_data_dir = "../../data/raw/" + time.strftime("%Y%m%d", time.localtime())
     if not os.path.exists(destination_data_dir):
         os.makedirs(destination_data_dir)
+    logging.basicConfig(filename='../../data/train_delay_download.log', level=logging.INFO,
+                        format='%(asctime)s %(message)s')
     download_delayed_trips(destination_data_dir)
