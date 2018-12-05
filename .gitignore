@@ -61,3 +61,5 @@ credentials.txt
 /data
 venv3/
 *.env
+
+\.idea/
