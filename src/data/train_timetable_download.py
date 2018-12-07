@@ -41,13 +41,16 @@ def train_timetable_download_run(data_dir, date_str):
     unzip_timetable(data_dir, date_str)
 
 
-if __name__== "__main__":
+if __name__ == "__main__":
     # run in own directory
     os.chdir(os.path.dirname(sys.argv[0]))
     load_dotenv()
     destination_data_dir = "../../data/raw/" + time.strftime("%Y%m%d", time.localtime())
     if not os.path.exists(destination_data_dir):
         os.makedirs(destination_data_dir)
-    logging.basicConfig(filename='../../data/train_timetable_download.log', level=logging.INFO,
+    log_dir = '../../data/logs/'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    logging.basicConfig(filename=log_dir+'train_timetable_download.log', level=logging.INFO,
                         format='%(asctime)s %(message)s')
     train_timetable_download_run(destination_data_dir, time.strftime("%Y%m%d", time.localtime()))
