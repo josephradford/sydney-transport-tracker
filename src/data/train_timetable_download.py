@@ -14,7 +14,7 @@ def train_timetable_download(data_dir, date_of_analysis):
     req = urllib.request.Request(url)
 
     try:
-        api_key = os.getenv("API_KEY")
+        api_key = os.getenv("TIMETABLE_API_KEY")
         req.add_header('Authorization', 'apikey ' + api_key)
     except TypeError:
         logging.exception("Error using saved api key, may not have been specified")

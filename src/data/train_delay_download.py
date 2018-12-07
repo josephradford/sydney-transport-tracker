@@ -13,7 +13,7 @@ def download_delayed_trips(data_dir):
     req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
 
     try:
-        api_key = os.getenv("API_KEY")
+        api_key = os.getenv("DELAYS_API_KEY")
         req.add_header('Authorization', 'apikey ' + api_key)
     except TypeError:
         logging.exception("Error using saved api key, may not have been specified")
