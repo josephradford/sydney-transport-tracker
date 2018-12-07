@@ -34,6 +34,9 @@ if __name__ == "__main__":
     destination_data_dir = "../../data/raw/" + time.strftime("%Y%m%d", time.localtime())
     if not os.path.exists(destination_data_dir):
         os.makedirs(destination_data_dir)
-    logging.basicConfig(filename='../../data/train_delay_download.log', level=logging.INFO,
+    log_dir = '../../data/logs/'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    logging.basicConfig(filename=log_dir+'train_delay_download.log', level=logging.INFO,
                         format='%(asctime)s %(message)s')
     download_delayed_trips(destination_data_dir)
