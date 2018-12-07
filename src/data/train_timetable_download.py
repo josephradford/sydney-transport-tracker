@@ -8,6 +8,8 @@ import logging
 from dotenv import load_dotenv
 import sys
 
+zip_file_name = "/gtfs_schedule_sydneytrains.zip"
+
 
 def train_timetable_download(data_dir, date_of_analysis):
     url = 'https://api.transport.nsw.gov.au/v1/gtfs/schedule/sydneytrains'
@@ -19,7 +21,7 @@ def train_timetable_download(data_dir, date_of_analysis):
     except TypeError:
         logging.exception("Error using saved api key, may not have been specified")
 
-    file_name = data_dir + "/gtfs_schedule_sydneytrains.zip"
+    file_name = data_dir + zip_file_name
     # Download the file from `url` and save it locally under `file_name`:
     with urllib.request.urlopen(req) as response, open(file_name, 'wb') as out_file:
         shutil.copyfileobj(response, out_file)
@@ -27,7 +29,7 @@ def train_timetable_download(data_dir, date_of_analysis):
 
 
 def unzip_timetable(data_dir, date_of_analysis):
-    file_name = data_dir + "/gtfs_schedule_sydneytrains.zip"
+    file_name = data_dir + zip_file_name
     with open(file_name, "rb") as f:
         z = zipfile.ZipFile(io.BytesIO(f.read()))
     
