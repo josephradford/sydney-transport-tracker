@@ -10,10 +10,15 @@ import sys
 def download_delayed_trips(data_dir):
     # logging.info("Downloading delayed trips...")
     time_started = time.localtime()
+    req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
+
     try:
-        req = urllib.request.Request('https://api.transport.nsw.gov.au/v1/gtfs/realtime/sydneytrains')
         api_key = os.getenv("API_KEY")
         req.add_header('Authorization', 'apikey ' + api_key)
+    except TypeError:
+        logging.exception("Error using saved api key, may not have been specified")
+
+    try:
         response = urllib.request.urlopen(req)
         filename = data_dir + "/" + time.strftime("%H%M%S", time_started) + ".pickle"
         pickle.dump(response.read(), open(filename, "wb"))
