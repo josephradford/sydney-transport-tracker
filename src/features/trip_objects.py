@@ -1,5 +1,5 @@
-import urllib
 import time
+
 
 class StopTimeUpdate:
     def __init__(self, stop_id, arrival_delay, departure_delay, schedule_relationship):
@@ -24,6 +24,7 @@ class StopTimeUpdate:
         if x is not NotImplemented:
             return not x
         return NotImplemented
+
 
 class TripUpdate:
     def __init__(self, trip_id, route_id, schedule_relationship, timestamp):

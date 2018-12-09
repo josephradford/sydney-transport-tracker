@@ -3,9 +3,11 @@ import time
 from trip_objects import *
 import os
 from progress.bar import Bar
-import pandas as pd
-import numpy as np
-import datetime
+import sys
+import logging
+import glob
+from google.transit import gtfs_realtime_pb2
+
 
 def merge_trips(old_trip, new_trip):
     if old_trip.trip_id != new_trip.trip_id:
@@ -19,172 +21,74 @@ def merge_trips(old_trip, new_trip):
         for old_stop_time_update in old_trip.stop_time_updates:
             if old_stop_time_update.stop_id == new_stop_time_update.stop_id:
                 # take the new one for now
-                #if old_stop_time_update != new_stop_time_update:
+                # if old_stop_time_update != new_stop_time_update:
                 old_stop_time_update = new_stop_time_update
                 foundStop = True
                 old_trip.timestamp = new_trip.timestamp
                 break
         if not foundStop:
             old_trip.stop_time_updates.append(new_stop_time_update)
-    
-def collate_train_delays(data_dir):
-    print("Merging delays in " + data_dir)
-    files = os.listdir(data_dir)
-    merged_trips = []
+
+
+def collate_train_delays(data_dir, dest_data_dir):
+    logging.info("Merging delays in " + data_dir + " to " + dest_data_dir)
+
+    # TODO filter the files to those with actual time strings
+    files = glob.glob(data_dir + '/*.pickle')
 
     bar = Bar('Merging files', max=len(files))
+    merged_trips = []
 
     for delay_data_file in files:
         bar.next()
         try:
-            trips = pickle.load(open(data_dir + "/" + delay_data_file, "rb" ))
+            current_delay_response = pickle.load(open(delay_data_file, "rb"))
         except:
-            continue # next file
+            continue  # next file
         
-        if not hasattr(trips, 'trip_updates'):
-            continue
+        feed = gtfs_realtime_pb2.FeedMessage()
+        feed.ParseFromString(current_delay_response)
+        for entity in feed.entity:
+            if entity.HasField('trip_update') and len(entity.trip_update.stop_time_update) > 0:
+                trip_update = TripUpdate(entity.trip_update.trip.trip_id,
+                                         entity.trip_update.trip.route_id,
+                                         entity.trip_update.trip.schedule_relationship,
+                                         entity.trip_update.timestamp)
 
-        for new_trip in trips.trip_updates:
-            foundTrip = False
-            for merged_trip in merged_trips:
-                if merged_trip.trip_id == new_trip.trip_id:
-                    foundTrip = True
-                    merged_trip = merge_trips(merged_trip, new_trip)
-                    break
+                for stop_time_update in entity.trip_update.stop_time_update:
+                    trip_update.stop_time_updates.append(
+                        StopTimeUpdate(stop_time_update.stop_id,
+                                       stop_time_update.arrival.delay,
+                                       stop_time_update.departure.delay,
+                                       stop_time_update.schedule_relationship))
 
-            if foundTrip == False:
-                merged_trips.append(new_trip)
+                # merge with current trips
+                found_trip = False
+                for merged_trip in merged_trips:
+                    if trip_update.trip_id == merged_trip.trip_id:
+                        found_trip = True
+                        merged_trip = merge_trips(merged_trip, trip_update)
+                        break
 
-    bar.finish()
-
-    pickle.dump(merged_trips, open(data_dir + "/collated_delays.pickle", "wb" ))
-    print("Found " + str(len(merged_trips)) + " trips")
-
-def create_real_timetable(data_dir, date_of_analysis):
-    data_dir = data_dir + date_of_analysis
-    print("Creating real timetable for " + date_of_analysis + " in " + data_dir)
-
-    # load the static timetable into a data frame
-    df_stop_times = pd.read_csv(data_dir + '/stop_times.txt', header=0, 
-                                encoding='utf-8-sig', 
-                                dtype={'stop_id': str},
-                                parse_dates=['arrival_time', 'departure_time'])
-                                #date_parser=dateparse)
-       
-    # load the trip ids of that actual trips that happend on this day
-    df_trips = pd.read_pickle(data_dir + '/trips_' + date_of_analysis + '.pickle')
-
-    # remove any trips from stop_times that did NOT happen on this date
-    df_stop_times = df_stop_times[df_stop_times['trip_id'].isin(df_trips['trip_id'])]
-
-    # insert actual arrival, actual departure, and cancellation states into dataframe
-    # mark all as N/A to start with, so we know which things never had real time updates
-    df_stop_times.insert(2, 'arrival_delay', 'N/A')
-    df_stop_times.insert(3, 'actual_arrival_time', 'N/A')
-    df_stop_times.insert(5, 'departure_delay', 'N/A')
-    df_stop_times.insert(6, 'actual_departure_time', 'N/A')
-    df_stop_times.insert(7, 'schedule_relationship', 'N/A')
-
-    # load all delays found on this date
-    trip_delays = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
-
-    bar = Bar('Analyse trips', max=len(trip_delays))
-    for trip in trip_delays:
-        bar.next()
-        if not trip.trip_id in df_trips['trip_id'].values:
-            #print("Trip " + trip.trip_id + " was not supposed to run today!")
-            continue
-            
-        for stop_time_update in trip.stop_time_updates:
-            # some of these values might be 24:00, 25:00 etc to signfiy next day
-
-            idx = df_stop_times[(df_stop_times['trip_id'] == trip.trip_id) &
-                                (df_stop_times['stop_id'] == stop_time_update.stop_id)].index
-            if idx.empty:
-                # it shouldn't be
-               continue
-
-            idx = idx.item()
-
-            # calculate the real time
-            actual_arrival_time = update_time(date_of_analysis, df_stop_times.at[idx, 'arrival_time'], stop_time_update.arrival_delay)
-            actual_departure_time = update_time(date_of_analysis, df_stop_times.at[idx, 'departure_time'], stop_time_update.departure_delay)
-
-            # add the new values to the new columns
-            
-            df_stop_times.at[idx, 'arrival_delay'] = stop_time_update.arrival_delay
-            df_stop_times.at[idx, 'actual_arrival_time'] = actual_arrival_time
-            df_stop_times.at[idx, 'departure_delay'] = stop_time_update.departure_delay
-            df_stop_times.at[idx, 'actual_departure_time'] = actual_departure_time
-            df_stop_times.at[idx, 'schedule_relationship'] = stop_time_update.schedule_relationship
+                if not found_trip:
+                    merged_trips.append(trip_update)
 
     bar.finish()
 
-    df_stop_times.to_csv(data_dir + "/timetable_with_delays.csv")
-    df_stop_times.to_pickle(data_dir + "/timetable_with_delays.pickle")
-    print("Pickled the real timetable in " + data_dir)
-
-def match_delays_with_trips(data_dir, date_of_analysis):
-    data_dir = data_dir + date_of_analysis
-    print("Creating real trip summaries " + date_of_analysis + " in " + data_dir)
-
-    # load the trip ids of that actual trips that happend on this day
-    df_trips = pd.read_pickle(data_dir + '/trips_' + date_of_analysis + '.pickle')
-
-    # insert actual arrival, actual departure, and cancellation states into dataframe
-    # mark all as N/A to start with, so we know which things never had real time updates
-    df_trips.insert(4, 'maximum_arrival_delay', 'N/A')
-    df_trips.insert(5, 'average_arrival_delay', 'N/A')
-    df_trips.insert(7, 'maximum_departure_delay', 'N/A')
-    df_trips.insert(8, 'average_departure_delay', 'N/A')
-    df_trips.insert(9, 'schedule_relationship', 'N/A')
-	
-    # load all delays found on this date
-    trip_delays = pickle.load(open(data_dir + "/collated_delays.pickle", "rb" ))
-
-    bar = Bar('Analyse trips', max=len(trip_delays))
-    for trip in trip_delays:
-        bar.next()
-        if not trip.trip_id in df_trips['trip_id'].values:
-            #print("Trip " + trip.trip_id + " was not supposed to run today!")
-            continue
-            
-        idx = df_trips[(df_trips['trip_id'] == trip.trip_id)].index
-        if idx.empty:
-            # it shouldn't be
-            continue
-
-        idx = idx.item()
-
-        df_trips.at[idx, 'maximum_arrival_delay'] = trip.maximum_arrival_delay()
-        df_trips.at[idx, 'average_arrival_delay'] = trip.average_arrival_delay()
-        df_trips.at[idx, 'maximum_departure_delay'] = trip.maximum_departure_delay()
-        df_trips.at[idx, 'average_departure_delay'] = trip.average_departure_delay()
-        df_trips.at[idx, 'schedule_relationship'] = trip.overall_schedule_relationship()
-
-    bar.finish()
-
-    df_trips.to_csv(data_dir + "/trips_with_delays.csv")
-    df_trips.to_pickle(data_dir + "/trips_with_delays.pickle")
-    print("Pickled the real trip summaries in " + data_dir)
-
-def update_time(date_of_analysis, time_str, delay_val):
-    try:
-        delay_val = int(delay_val)
-        original_time = time.mktime(time.strptime(date_of_analysis + time_str, "%Y%m%d%H:%M:%S"))
-        updated_time = original_time + delay_val
-        updated_time = time.localtime(updated_time)
-        return time.strftime("%H:%M:%S", updated_time)
-    except:
-        return "Exception"
-
-def collate_train_delays_run(data_dir, date_str):
-    collate_train_delays(data_dir + date_str)
-    create_real_timetable(data_dir, date_str)
-    match_delays_with_trips(data_dir, date_str)
+    pickle.dump(merged_trips, open(dest_data_dir + "/collated_delays.pickle", "wb"))
+    logging.info("Found " + str(len(merged_trips)) + " trips")
 
 
-if __name__== "__main__":
-    data_dir = "data/"
-    date_str = time.strftime("%Y%m%d", time.localtime())
-    collate_train_delays_run(data_dir, date_str)
+if __name__ == "__main__":
+    # run in own directory
+    os.chdir(os.path.dirname(sys.argv[0]))
+    source_data_dir = "../../data/raw/" + time.strftime("%Y%m%d", time.localtime())
+    destination_data_dir = "../../data/interim/" + time.strftime("%Y%m%d", time.localtime())
+    if not os.path.exists(destination_data_dir):
+        os.makedirs(destination_data_dir)
+    log_dir = '../../data/logs/'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    logging.basicConfig(filename=log_dir+'train_collate_delays.log', level=logging.INFO,
+                        format='%(asctime)s %(message)s')
+    collate_train_delays(source_data_dir, destination_data_dir)
