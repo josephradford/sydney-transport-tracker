@@ -1,16 +1,24 @@
-def create_real_timetable(data_dir, date_of_analysis):
-    data_dir = data_dir + date_of_analysis
-    print("Creating real timetable for " + date_of_analysis + " in " + data_dir)
+import os
+import pandas as pd
+import logging
+import sys
+import time
+import pickle
+from progress.bar import Bar
+
+
+def create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis):
+    logging.info("Creating real timetable for " + date_of_analysis)
 
     # load the static timetable into a data frame
-    df_stop_times = pd.read_csv(data_dir + '/stop_times.txt', header=0,
+    df_stop_times = pd.read_csv(_raw_data_dir + '/stop_times.txt', header=0,
                                 encoding='utf-8-sig',
                                 dtype={'stop_id': str},
                                 parse_dates=['arrival_time', 'departure_time'])
     # date_parser=dateparse)
 
-    # load the trip ids of that actual trips that happend on this day
-    df_trips = pd.read_pickle(data_dir + '/trips_' + date_of_analysis + '.pickle')
+    # load the trip ids of that actual trips that happened on this day
+    df_trips = pd.read_pickle(_interim_data_dir + '/trips_' + date_of_analysis + '.pickle')
 
     # remove any trips from stop_times that did NOT happen on this date
     df_stop_times = df_stop_times[df_stop_times['trip_id'].isin(df_trips['trip_id'])]
@@ -24,12 +32,12 @@ def create_real_timetable(data_dir, date_of_analysis):
     df_stop_times.insert(7, 'schedule_relationship', 'N/A')
 
     # load all delays found on this date
-    trip_delays = pickle.load(open(data_dir + "/collated_delays.pickle", "rb"))
+    trip_delays = pickle.load(open(_interim_data_dir + "/collated_delays.pickle", "rb"))
 
     bar = Bar('Analyse trips', max=len(trip_delays))
     for trip in trip_delays:
         bar.next()
-        if not trip.trip_id in df_trips['trip_id'].values:
+        if trip.trip_id not in df_trips['trip_id'].values:
             # print("Trip " + trip.trip_id + " was not supposed to run today!")
             continue
 
@@ -60,17 +68,16 @@ def create_real_timetable(data_dir, date_of_analysis):
 
     bar.finish()
 
-    df_stop_times.to_csv(data_dir + "/timetable_with_delays.csv")
-    df_stop_times.to_pickle(data_dir + "/timetable_with_delays.pickle")
-    print("Pickled the real timetable in " + data_dir)
+    df_stop_times.to_csv(_interim_data_dir + "/timetable_with_delays.csv")
+    df_stop_times.to_pickle(_interim_data_dir + "/timetable_with_delays.pickle")
+    logging.info("Pickled the real timetable in " + _interim_data_dir)
 
 
-def match_delays_with_trips(data_dir, date_of_analysis):
-    data_dir = data_dir + date_of_analysis
-    print("Creating real trip summaries " + date_of_analysis + " in " + data_dir)
+def create_trip_summaries(_interim_data_dir, date_of_analysis):
+    logging.info("Creating real trip summaries for " + date_of_analysis)
 
     # load the trip ids of that actual trips that happend on this day
-    df_trips = pd.read_pickle(data_dir + '/trips_' + date_of_analysis + '.pickle')
+    df_trips = pd.read_pickle(_interim_data_dir + '/trips_' + date_of_analysis + '.pickle')
 
     # insert actual arrival, actual departure, and cancellation states into dataframe
     # mark all as N/A to start with, so we know which things never had real time updates
@@ -81,12 +88,12 @@ def match_delays_with_trips(data_dir, date_of_analysis):
     df_trips.insert(9, 'schedule_relationship', 'N/A')
 
     # load all delays found on this date
-    trip_delays = pickle.load(open(data_dir + "/collated_delays.pickle", "rb"))
+    trip_delays = pickle.load(open(_interim_data_dir + "/collated_delays.pickle", "rb"))
 
     bar = Bar('Analyse trips', max=len(trip_delays))
     for trip in trip_delays:
         bar.next()
-        if not trip.trip_id in df_trips['trip_id'].values:
+        if trip.trip_id not in df_trips['trip_id'].values:
             # print("Trip " + trip.trip_id + " was not supposed to run today!")
             continue
 
@@ -105,9 +112,9 @@ def match_delays_with_trips(data_dir, date_of_analysis):
 
     bar.finish()
 
-    df_trips.to_csv(data_dir + "/trips_with_delays.csv")
-    df_trips.to_pickle(data_dir + "/trips_with_delays.pickle")
-    print("Pickled the real trip summaries in " + data_dir)
+    df_trips.to_csv(_interim_data_dir + "/trips_with_delays.csv")
+    df_trips.to_pickle(_interim_data_dir + "/trips_with_delays.pickle")
+    logging.info("Pickled the real trip summaries in " + _interim_data_dir)
 
 
 def update_time(date_of_analysis, time_str, delay_val):
@@ -120,3 +127,20 @@ def update_time(date_of_analysis, time_str, delay_val):
     except:
         return "Exception"
 
+
+def create_real_timetable_run(_raw_data_dir, _interim_data_dir, date_of_analysis):
+    create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis)
+    create_trip_summaries(_interim_data_dir, date_of_analysis)
+
+
+if __name__ == "__main__":
+    # run in own directory
+    os.chdir(os.path.dirname(sys.argv[0]))
+    raw_data_dir = "../../data/raw/" + time.strftime("%Y%m%d", time.localtime())
+    interim_data_dir = "../../data/interim/" + time.strftime("%Y%m%d", time.localtime())
+    log_dir = '../../data/logs/'
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    logging.basicConfig(filename=log_dir+'train_create_real_timetable.log', level=logging.INFO,
+                        format='%(asctime)s %(message)s')
+    create_real_timetable_run(raw_data_dir, interim_data_dir, time.strftime("%Y%m%d", time.localtime()))
