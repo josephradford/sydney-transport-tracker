@@ -28,6 +28,7 @@ def merge_trips(old_trip, new_trip):
                 break
         if not foundStop:
             old_trip.stop_time_updates.append(new_stop_time_update)
+    return old_trip
 
 
 def collate_train_delays(data_dir, dest_data_dir):
@@ -37,7 +38,7 @@ def collate_train_delays(data_dir, dest_data_dir):
     files = glob.glob(data_dir + '/*.pickle')
 
     bar = Bar('Merging files', max=len(files))
-    merged_trips = []
+    merged_trips = dict()
 
     for delay_data_file in files:
         bar.next()
@@ -62,16 +63,13 @@ def collate_train_delays(data_dir, dest_data_dir):
                                        stop_time_update.departure.delay,
                                        stop_time_update.schedule_relationship))
 
+                if trip_update is None:
+                    print('trip update is none')
                 # merge with current trips
-                found_trip = False
-                for merged_trip in merged_trips:
-                    if trip_update.trip_id == merged_trip.trip_id:
-                        found_trip = True
-                        merged_trip = merge_trips(merged_trip, trip_update)
-                        break
-
-                if not found_trip:
-                    merged_trips.append(trip_update)
+                if trip_update.trip_id in merged_trips:
+                    merged_trips[trip_update.trip_id] = merge_trips(merged_trips[trip_update.trip_id], trip_update)
+                else:
+                    merged_trips[trip_update.trip_id] = trip_update
 
     bar.finish()
 
