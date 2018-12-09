@@ -28,7 +28,7 @@ class StopTimeUpdate:
 
 class TripUpdate:
     def __init__(self, trip_id, route_id, schedule_relationship, timestamp):
-        self.stop_time_updates = []
+        self.stop_time_updates = dict()
         self.trip_id = trip_id
         self.route_id = route_id
         self.schedule_relationship = schedule_relationship

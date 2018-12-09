@@ -17,17 +17,13 @@ def merge_trips(old_trip, new_trip):
         return old_trip
 
     for new_stop_time_update in new_trip.stop_time_updates:
-        foundStop = False
-        for old_stop_time_update in old_trip.stop_time_updates:
-            if old_stop_time_update.stop_id == new_stop_time_update.stop_id:
-                # take the new one for now
-                # if old_stop_time_update != new_stop_time_update:
-                old_stop_time_update = new_stop_time_update
-                foundStop = True
-                old_trip.timestamp = new_trip.timestamp
-                break
-        if not foundStop:
-            old_trip.stop_time_updates.append(new_stop_time_update)
+        if new_stop_time_update in old_trip.stop_time_updates:
+            # take the new one for now
+            old_trip.stop_time_updates[new_stop_time_update] = new_trip.stop_time_updates[new_stop_time_update]
+            old_trip.timestamp = new_trip.timestamp
+        else:
+            old_trip.stop_time_updates[new_stop_time_update] = new_trip.stop_time_updates[new_stop_time_update]
+
     return old_trip
 
 
@@ -57,11 +53,11 @@ def collate_train_delays(data_dir, dest_data_dir):
                                          entity.trip_update.timestamp)
 
                 for stop_time_update in entity.trip_update.stop_time_update:
-                    trip_update.stop_time_updates.append(
-                        StopTimeUpdate(stop_time_update.stop_id,
-                                       stop_time_update.arrival.delay,
-                                       stop_time_update.departure.delay,
-                                       stop_time_update.schedule_relationship))
+                    trip_update.stop_time_updates[stop_time_update.stop_id] \
+                        = StopTimeUpdate(stop_time_update.stop_id,
+                                         stop_time_update.arrival.delay,
+                                         stop_time_update.departure.delay,
+                                         stop_time_update.schedule_relationship)
 
                 if trip_update is None:
                     print('trip update is none')
