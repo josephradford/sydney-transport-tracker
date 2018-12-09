@@ -8,8 +8,6 @@ import logging
 
 
 def create_daily_timetable(source_dir, dest_dir, date_of_analysis):
-    print("Creating timetable for " + date_of_analysis + " in " + dest_dir)
-
     my_date = time.strptime(date_of_analysis, "%Y%m%d")
     day_of_analysis = str.lower(calendar.day_name[my_date.tm_wday])
 
@@ -34,8 +32,7 @@ def create_daily_timetable(source_dir, dest_dir, date_of_analysis):
 
     df.to_pickle(dest_dir + '/trips_' + date_of_analysis + '.pickle')
 
-    print("Created timetable for " + date_of_analysis + " in " + dest_dir)
-    print("Created this day's timetable")
+    logging.info("Created timetable for " + date_of_analysis + " in " + dest_dir)
 
 
 if __name__ == "__main__":
@@ -48,6 +45,6 @@ if __name__ == "__main__":
     log_dir = '../../data/logs/'
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    logging.basicConfig(filename=log_dir+'train_timetable_download.log', level=logging.INFO,
+    logging.basicConfig(filename=log_dir+'train_create_daily_timetable.log', level=logging.INFO,
                         format='%(asctime)s %(message)s')
     create_daily_timetable(source_data_dir, destination_data_dir, time.strftime("%Y%m%d", time.localtime()))
