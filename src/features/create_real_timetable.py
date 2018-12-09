@@ -35,14 +35,14 @@ def create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis):
     trip_delays = pickle.load(open(_interim_data_dir + "/collated_delays.pickle", "rb"))
 
     bar = Bar('Analyse trips', max=len(trip_delays))
-    for trip in trip_delays:
+    for trip in trip_delays.values():
         bar.next()
         if trip.trip_id not in df_trips['trip_id'].values:
             # print("Trip " + trip.trip_id + " was not supposed to run today!")
             continue
 
-        for stop_time_update in trip.stop_time_updates:
-            # some of these values might be 24:00, 25:00 etc to signfiy next day
+        for stop_time_update in trip.stop_time_updates.values():
+            # some of these values might be 24:00, 25:00 etc to signify next day
 
             idx = df_stop_times[(df_stop_times['trip_id'] == trip.trip_id) &
                                 (df_stop_times['stop_id'] == stop_time_update.stop_id)].index
@@ -91,7 +91,7 @@ def create_trip_summaries(_interim_data_dir, date_of_analysis):
     trip_delays = pickle.load(open(_interim_data_dir + "/collated_delays.pickle", "rb"))
 
     bar = Bar('Analyse trips', max=len(trip_delays))
-    for trip in trip_delays:
+    for trip in trip_delays.values():
         bar.next()
         if trip.trip_id not in df_trips['trip_id'].values:
             # print("Trip " + trip.trip_id + " was not supposed to run today!")
