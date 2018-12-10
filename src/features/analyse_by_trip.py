@@ -35,7 +35,19 @@ def analyse_by_trip(_interim_data_dir, start_time, end_time):
     trips_time = trips[((start_time < trips['start_timestamp']) & (trips['start_timestamp'] < end_time)) |
                        ((start_time < trips['end_timestamp']) & (trips['end_timestamp'] < end_time))]
 
-    logging.info("Found trips between " + start_time + " and " + end_time)
+    total_trips = len(trips_time)
+
+    trips_time_delay = trips_time[trips_time['maximum_departure_delay'] > 0]
+
+    trips_cancelled = trips_time[trips_time['schedule_relationship'] > 0]
+
+    print("Total trips = " + str(total_trips))
+    print("Trips delayed = " + str(len(trips_time_delay)))
+    print("Trips cancelled = " + str(len(trips_cancelled)))
+
+    logging.info("Total trips = " + str(total_trips) + "; " +
+                 "Trips delayed = " + str(len(trips_time_delay)) + "; " +
+                 "Trips cancelled = " + str(len(trips_cancelled)))
     trips_time.to_csv(_interim_data_dir + "/slice.csv")
 
 
@@ -51,4 +63,4 @@ if __name__ == "__main__":
                         format='%(asctime)s %(message)s')
     from_time = time(7, 0, 0)
     to_time = time(10, 0, 0)
-    analyse_by_trip(raw_data_dir, interim_data_dir, from_time, to_time)
+    analyse_by_trip(interim_data_dir, from_time, to_time)
