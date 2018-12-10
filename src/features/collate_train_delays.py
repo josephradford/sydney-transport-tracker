@@ -27,11 +27,11 @@ def merge_trips(old_trip, new_trip):
     return old_trip
 
 
-def collate_train_delays(data_dir, dest_data_dir):
-    logging.info("Merging delays in " + data_dir + " to " + dest_data_dir)
+def collate_train_delays(_source_data_dir, _destination_data_dir):
+    logging.info("Merging delays in " + _source_data_dir + " to " + _destination_data_dir)
 
     # TODO filter the files to those with actual time strings
-    files = glob.glob(data_dir + '/*.pickle')
+    files = glob.glob(_source_data_dir + '/*.pickle')
 
     bar = Bar('Merging files', max=len(files))
     merged_trips = dict()
@@ -69,7 +69,7 @@ def collate_train_delays(data_dir, dest_data_dir):
 
     bar.finish()
 
-    pickle.dump(merged_trips, open(dest_data_dir + "/collated_delays.pickle", "wb"))
+    pickle.dump(merged_trips, open(_destination_data_dir + "/collated_delays.pickle", "wb"))
     logging.info("Found " + str(len(merged_trips)) + " trips")
 
 
