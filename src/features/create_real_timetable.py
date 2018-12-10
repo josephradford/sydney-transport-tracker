@@ -73,19 +73,26 @@ def create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis, co
     logging.info("Pickled the real timetable in " + _interim_data_dir)
 
 
-def create_trip_summaries(_interim_data_dir, date_of_analysis, collated_delays_filename):
+def create_trip_summaries(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename):
     logging.info("Creating real trip summaries for " + date_of_analysis)
 
     # load the trip ids of that actual trips that happened on this day
     df_trips = pd.read_pickle(_interim_data_dir + '/trips_' + date_of_analysis + '.pickle')
 
+    df_stop_times = pd.read_csv(_raw_data_dir + '/stop_times.txt', header=0,
+                                encoding='utf-8-sig',
+                                dtype={'stop_id': str},
+                                parse_dates=['arrival_time', 'departure_time'])
+
     # insert actual arrival, actual departure, and cancellation states into dataframe
     # mark all as N/A to start with, so we know which things never had real time updates
-    df_trips.insert(4, 'maximum_arrival_delay', 'N/A')
-    df_trips.insert(5, 'average_arrival_delay', 'N/A')
-    df_trips.insert(7, 'maximum_departure_delay', 'N/A')
-    df_trips.insert(8, 'average_departure_delay', 'N/A')
-    df_trips.insert(9, 'schedule_relationship', 'N/A')
+    df_trips.insert(0, 'start_timestamp', 'N/A')
+    df_trips.insert(1, 'end_timestamp', 'N/A')
+    df_trips.insert(6, 'maximum_arrival_delay', 'N/A')
+    df_trips.insert(7, 'average_arrival_delay', 'N/A')
+    df_trips.insert(8, 'maximum_departure_delay', 'N/A')
+    df_trips.insert(9, 'average_departure_delay', 'N/A')
+    df_trips.insert(10, 'schedule_relationship', 'N/A')
 
     # load all delays found on this date
     trip_delays = pickle.load(open(_interim_data_dir + "/" + collated_delays_filename + ".pickle", "rb"))
@@ -110,6 +117,10 @@ def create_trip_summaries(_interim_data_dir, date_of_analysis, collated_delays_f
         df_trips.at[idx, 'average_departure_delay'] = trip.average_departure_delay()
         df_trips.at[idx, 'schedule_relationship'] = trip.overall_schedule_relationship()
 
+    for i, row in df_trips.iterrows():
+        df_trips.at[i, 'start_timestamp'] = df_stop_times[df_stop_times['trip_id'] == row['trip_id']]['departure_time'].iloc[0]
+        df_trips.at[i, 'end_timestamp'] = df_stop_times[df_stop_times['trip_id'] == row['trip_id']]['departure_time'].iloc[-1]
+
     bar.finish()
 
     df_trips.to_csv(_interim_data_dir + "/trips_with_delays.csv")
@@ -130,7 +141,7 @@ def update_time(date_of_analysis, time_str, delay_val):
 
 def create_real_timetable_run(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename):
     create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename)
-    create_trip_summaries(_interim_data_dir, date_of_analysis, collated_delays_filename)
+    create_trip_summaries(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename)
 
 
 if __name__ == "__main__":
