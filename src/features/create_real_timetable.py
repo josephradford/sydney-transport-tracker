@@ -79,10 +79,8 @@ def create_trip_summaries(_raw_data_dir, _interim_data_dir, date_of_analysis, co
     # load the trip ids of that actual trips that happened on this day
     df_trips = pd.read_pickle(_interim_data_dir + '/trips_' + date_of_analysis + '.pickle')
 
-    df_stop_times = pd.read_csv(_raw_data_dir + '/stop_times.txt', header=0,
-                                encoding='utf-8-sig',
-                                dtype={'stop_id': str},
-                                parse_dates=['arrival_time', 'departure_time'])
+    # get the stop times for trips that happened this day
+    df_stop_times = pd.read_pickle(_interim_data_dir + "/timetable_with_delays.pickle")
 
     # insert actual arrival, actual departure, and cancellation states into dataframe
     # mark all as N/A to start with, so we know which things never had real time updates
@@ -117,9 +115,14 @@ def create_trip_summaries(_raw_data_dir, _interim_data_dir, date_of_analysis, co
         df_trips.at[idx, 'average_departure_delay'] = trip.average_departure_delay()
         df_trips.at[idx, 'schedule_relationship'] = trip.overall_schedule_relationship()
 
-    for i, row in df_trips.iterrows():
-        df_trips.at[i, 'start_timestamp'] = df_stop_times[df_stop_times['trip_id'] == row['trip_id']]['departure_time'].iloc[0]
-        df_trips.at[i, 'end_timestamp'] = df_stop_times[df_stop_times['trip_id'] == row['trip_id']]['departure_time'].iloc[-1]
+    bar.finish()
+
+    bar = Bar('Add stop and start times', max=len(df_trips))
+    for i in df_trips.index:
+        bar.next()
+        departure_series = df_stop_times[df_stop_times['trip_id'] == df_trips.at[i, 'trip_id']]['departure_time']
+        df_trips.at[i, 'start_timestamp'] = departure_series.iloc[0]
+        df_trips.at[i, 'end_timestamp'] = departure_series.iloc[-1]
 
     bar.finish()
 
