@@ -24,6 +24,8 @@ if __name__ == "__main__":
     os.chdir(os.path.dirname(sys.argv[0]))
     raw_data_dir = "../../data/raw/" + datetime.strftime(datetime.now(), "%Y%m%d")
     interim_data_dir = "../../data/interim/" + datetime.strftime(datetime.now(), "%Y%m%d")
+    if not os.path.exists(interim_data_dir):
+        os.makedirs(interim_data_dir)
     log_dir = '../../data/logs/'
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
