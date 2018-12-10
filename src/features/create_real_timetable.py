@@ -5,6 +5,7 @@ import sys
 import time
 import pickle
 from progress.bar import Bar
+from datetime import datetime, timedelta
 
 
 def create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename):
@@ -121,8 +122,8 @@ def create_trip_summaries(_raw_data_dir, _interim_data_dir, date_of_analysis, co
     for i in df_trips.index:
         bar.next()
         departure_series = df_stop_times[df_stop_times['trip_id'] == df_trips.at[i, 'trip_id']]['departure_time']
-        df_trips.at[i, 'start_timestamp'] = departure_series.iloc[0]
-        df_trips.at[i, 'end_timestamp'] = departure_series.iloc[-1]
+        df_trips.at[i, 'start_timestamp'] = convert_to_timestamp(date_of_analysis, departure_series.iloc[0])
+        df_trips.at[i, 'end_timestamp'] = convert_to_timestamp(date_of_analysis, departure_series.iloc[-1])
 
     bar.finish()
 
@@ -140,6 +141,18 @@ def update_time(date_of_analysis, time_str, delay_val):
         return time.strftime("%H:%M:%S", updated_time)
     except:
         return "Exception"
+
+
+def convert_to_timestamp(date_of_analysis, time_str):
+    hours = int(time_str[0:2])
+    if hours > 23:
+        time_str = '0' + str(hours-23) + time_str[2:]
+        retval = datetime.strptime(date_of_analysis + time_str, "%Y%m%d%H:%M:%S")
+        retval += timedelta(days=1)
+        return retval
+    else:
+        retval = datetime.strptime(date_of_analysis + time_str, "%Y%m%d%H:%M:%S")
+        return retval
 
 
 def create_real_timetable_run(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename):
