@@ -87,11 +87,11 @@ def create_trip_summaries(_raw_data_dir, _interim_data_dir, date_of_analysis, co
     # mark all as N/A to start with, so we know which things never had real time updates
     df_trips.insert(0, 'start_timestamp', 'N/A')
     df_trips.insert(1, 'end_timestamp', 'N/A')
-    df_trips.insert(6, 'maximum_arrival_delay', 'N/A')
-    df_trips.insert(7, 'average_arrival_delay', 'N/A')
-    df_trips.insert(8, 'maximum_departure_delay', 'N/A')
-    df_trips.insert(9, 'average_departure_delay', 'N/A')
-    df_trips.insert(10, 'schedule_relationship', 'N/A')
+    df_trips.insert(6, 'maximum_arrival_delay', 0)
+    df_trips.insert(7, 'average_arrival_delay', 0)
+    df_trips.insert(8, 'maximum_departure_delay', 0)
+    df_trips.insert(9, 'average_departure_delay', 0)
+    df_trips.insert(10, 'schedule_relationship', 0)
 
     # load all delays found on this date
     trip_delays = pickle.load(open(_interim_data_dir + "/" + collated_delays_filename + ".pickle", "rb"))
