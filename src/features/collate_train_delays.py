@@ -27,6 +27,14 @@ def merge_trips(old_trip, new_trip):
     return old_trip
 
 
+def collate_train_delay_save(_source_data_dir, _destination_data_dir, start_time, end_time):
+    trips = collate_train_delays(_source_data_dir, _destination_data_dir, start_time, end_time)
+
+    pickle.dump(trips, open(_destination_data_dir + "/collated_delays_" +
+                            start_time.strftime("%H%M%S") + "_" +
+                            end_time.strftime("%H%M%S") + ".pickle", "wb"))
+
+
 def collate_train_delays(_source_data_dir, _destination_data_dir, start_time, end_time):
 
     if type(start_time) is not time:
@@ -80,10 +88,9 @@ def collate_train_delays(_source_data_dir, _destination_data_dir, start_time, en
 
     bar.finish()
 
-    pickle.dump(merged_trips, open(_destination_data_dir + "/collated_delays_" +
-                                   start_time.strftime("%H%M%S") + "_" +
-                                   end_time.strftime("%H%M%S") + ".pickle", "wb"))
     logging.info("Found " + str(len(merged_trips)) + " trips")
+
+    return merged_trips
 
 
 if __name__ == "__main__":
@@ -100,4 +107,4 @@ if __name__ == "__main__":
                         format='%(asctime)s %(message)s')
     from_time = time(0, 0, 0)
     to_time = time(23, 59, 59)
-    collate_train_delays(source_data_dir, destination_data_dir, from_time, to_time)
+    collate_train_delay_save(source_data_dir, destination_data_dir, from_time, to_time)
