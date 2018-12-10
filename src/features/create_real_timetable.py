@@ -7,7 +7,7 @@ import pickle
 from progress.bar import Bar
 
 
-def create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis):
+def create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename):
     logging.info("Creating real timetable for " + date_of_analysis)
 
     # load the static timetable into a data frame
@@ -32,7 +32,7 @@ def create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis):
     df_stop_times.insert(7, 'schedule_relationship', 'N/A')
 
     # load all delays found on this date
-    trip_delays = pickle.load(open(_interim_data_dir + "/collated_delays.pickle", "rb"))
+    trip_delays = pickle.load(open(_interim_data_dir + "/" + collated_delays_filename + ".pickle", "rb"))
 
     bar = Bar('Analyse trips', max=len(trip_delays))
     for trip in trip_delays.values():
@@ -73,10 +73,10 @@ def create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis):
     logging.info("Pickled the real timetable in " + _interim_data_dir)
 
 
-def create_trip_summaries(_interim_data_dir, date_of_analysis):
+def create_trip_summaries(_interim_data_dir, date_of_analysis, collated_delays_filename):
     logging.info("Creating real trip summaries for " + date_of_analysis)
 
-    # load the trip ids of that actual trips that happend on this day
+    # load the trip ids of that actual trips that happened on this day
     df_trips = pd.read_pickle(_interim_data_dir + '/trips_' + date_of_analysis + '.pickle')
 
     # insert actual arrival, actual departure, and cancellation states into dataframe
@@ -88,7 +88,7 @@ def create_trip_summaries(_interim_data_dir, date_of_analysis):
     df_trips.insert(9, 'schedule_relationship', 'N/A')
 
     # load all delays found on this date
-    trip_delays = pickle.load(open(_interim_data_dir + "/collated_delays.pickle", "rb"))
+    trip_delays = pickle.load(open(_interim_data_dir + "/" + collated_delays_filename + ".pickle", "rb"))
 
     bar = Bar('Analyse trips', max=len(trip_delays))
     for trip in trip_delays.values():
@@ -128,9 +128,9 @@ def update_time(date_of_analysis, time_str, delay_val):
         return "Exception"
 
 
-def create_real_timetable_run(_raw_data_dir, _interim_data_dir, date_of_analysis):
-    create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis)
-    create_trip_summaries(_interim_data_dir, date_of_analysis)
+def create_real_timetable_run(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename):
+    create_real_timetable(_raw_data_dir, _interim_data_dir, date_of_analysis, collated_delays_filename)
+    create_trip_summaries(_interim_data_dir, date_of_analysis, collated_delays_filename)
 
 
 if __name__ == "__main__":
@@ -143,4 +143,6 @@ if __name__ == "__main__":
         os.makedirs(log_dir)
     logging.basicConfig(filename=log_dir+'train_create_real_timetable.log', level=logging.INFO,
                         format='%(asctime)s %(message)s')
-    create_real_timetable_run(raw_data_dir, interim_data_dir, time.strftime("%Y%m%d", time.localtime()))
+    create_real_timetable_run(raw_data_dir, interim_data_dir,
+                              time.strftime("%Y%m%d", time.localtime()),
+                              "collated_delays_000000_235959")
