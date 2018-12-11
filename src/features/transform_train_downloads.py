@@ -6,6 +6,9 @@ from progress.bar import Bar
 from google.transit import gtfs_realtime_pb2
 from trip_objects import *
 import pickle
+import calendar
+import csv
+import pandas as pd
 
 
 class TransformTrainDownloads:
@@ -61,7 +64,6 @@ class TransformTrainDownloads:
         return old_trip
 
     def _merge_delays(self):
-
         logging.info("Merging delays in " + self.source_data_dir + " to " + self.destination_data_dir)
 
         # TODO filter the files to those with actual time strings
@@ -112,7 +114,32 @@ class TransformTrainDownloads:
         logging.info("Found " + str(len(self.merged_delays)) + " trips")
 
     def _filter_trips(self):
-        pass
+        day_of_analysis = str.lower(calendar.day_name[self.date_of_analysis.isoweekday() - 1])
+
+        # create list of services that run on this day
+        todays_services = []
+        with open(self.source_data_dir + '/calendar.txt', mode='r', encoding='utf-8-sig') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            line_count = 0
+            for row in csv_reader:
+                if line_count != 0:
+                    if row[day_of_analysis] == '1':
+                        start_date = datetime.datetime.strptime(row['start_date'], "%Y%m%d").date()
+                        end_date = datetime.datetime.strptime(row['end_date'], "%Y%m%d").date()
+                        if start_date <= self.date_of_analysis <= end_date:
+                            todays_services.append(row['service_id'])
+                line_count += 1
+
+        # create data frame that is only this day's trips
+        df = pd.read_csv(self.source_data_dir + '/trips.txt', header=0, encoding='utf-8-sig')
+        df = df[df['service_id'].isin(todays_services)]
+        df = df[~df['route_id'].isin(['RTTA_DEF', 'RTTA_REV'])]
+
+        self.df_filtered_trips = df
+
+        logging.info("Created timetable")
+
+        # TODO filter out by time as well, by looking at the trip.txt
 
     def _filter_stop_times(self):
         pass
