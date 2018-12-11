@@ -2,6 +2,8 @@ import os
 from datetime import time, date, datetime
 import sys
 from transform_train_downloads import TransformTrainDownloads
+import tweepy
+from dotenv import load_dotenv
 
 
 def analyse_by_time_run(start_time, end_time, date_of_analysis):
@@ -51,12 +53,27 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
 
     print(tweet_string)
 
+    consumer_key = os.getenv("CONSUMER_KEY")
+    consumer_secret = os.getenv("CONSUMER_SECRET")
+    access_token = os.getenv("ACCESS_TOKEN")
+    access_token_secret = os.getenv("ACCESS_TOKEN_SECRET")
+
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_token, access_token_secret)
+
+    api = tweepy.API(auth)
+
+    print(api.me().name)
+
+    api.update_status(status=tweet_string)
+
     print("Transformed using new class")
 
 
 if __name__ == "__main__":
     # run in own directory
     os.chdir(os.path.dirname(sys.argv[0]))
+    load_dotenv()
     from_time = time(7, 50, 0)
     to_time = time(8, 0, 0)
     analyse_by_time_run(from_time, to_time, date.today())
