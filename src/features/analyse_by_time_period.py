@@ -9,10 +9,10 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
     transform.transform()
 
     # currently, a lot of these are duplicates of each other due to not making deep copies in pandas
-    transform.df_filtered_trips.to_csv("df_filtered_trips.csv")
-    transform.df_filtered_trips_delays.to_csv("df_filtered_trips_delays.csv")
-    transform.df_filtered_stop_times.to_csv("df_filtered_stop_times.csv")
-    transform.df_filtered_stop_times_delays.to_csv("df_filtered_stop_times_delays.csv")
+    # transform.df_filtered_trips.to_csv("df_filtered_trips.csv")
+    # transform.df_filtered_trips_delays.to_csv("df_filtered_trips_delays.csv")
+    # transform.df_filtered_stop_times.to_csv("df_filtered_stop_times.csv")
+    # transform.df_filtered_stop_times_delays.to_csv("df_filtered_stop_times_delays.csv")
 
     start_dt = datetime(datetime.today().year,
                         datetime.today().month,
@@ -41,6 +41,15 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
     print("Total trips = " + str(total_trips))
     print("Trips delayed = " + str(len(trips_time_delay)))
     print("Trips cancelled = " + str(len(trips_cancelled)))
+
+    delay_ratio = 100 * len(trips_time_delay) / len(trips_time)
+    delay_ratio = round(delay_ratio)
+
+    tweet_string = "Between " + start_time.strftime("%H:%M") + " and " + end_time.strftime("%H:%M") \
+                   + " today, out of " + str(len(trips_time)) + " trips, " + str(len(trips_time_delay)) \
+                   + " experienced delays (" + str(delay_ratio) + "%)."
+
+    print(tweet_string)
 
     print("Transformed using new class")
 
