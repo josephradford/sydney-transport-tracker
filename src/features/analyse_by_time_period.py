@@ -74,6 +74,6 @@ if __name__ == "__main__":
     # run in own directory
     os.chdir(os.path.dirname(sys.argv[0]))
     load_dotenv()
-    from_time = time(7, 50, 0)
-    to_time = time(8, 0, 0)
+    from_time = time(7, 00, 0)
+    to_time = time(9, 0, 0)
     analyse_by_time_run(from_time, to_time, date.today())
