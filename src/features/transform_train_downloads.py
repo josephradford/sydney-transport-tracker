@@ -155,7 +155,68 @@ class TransformTrainDownloads:
         logging.info("Created real schedule of stop times for this time period only")
 
     def _merge_stop_time_delays(self):
-        pass
+        df_stop_times = self.df_filtered_stop_times
+
+        # insert actual arrival, actual departure, and cancellation states into data frame
+        # mark all as N/A to start with, so we know which things never had real time updates
+        df_stop_times.insert(2, 'arrival_delay', 'N/A')
+        df_stop_times.insert(3, 'actual_arrival_time', 'N/A')
+        df_stop_times.insert(5, 'departure_delay', 'N/A')
+        df_stop_times.insert(6, 'actual_departure_time', 'N/A')
+        df_stop_times.insert(7, 'schedule_relationship', 'N/A')
+
+        # load all delays found on this date
+        trip_delays = self.merged_delays
+
+        df_trips = self.df_filtered_trips
+
+        bar = Bar('Analyse trips', max=len(trip_delays))
+        for trip in trip_delays.values():
+            bar.next()
+            if trip.trip_id not in df_trips['trip_id'].values:
+                # print("Trip " + trip.trip_id + " was not supposed to run today!")
+                continue
+
+            for stop_time_update in trip.stop_time_updates.values():
+                # some of these values might be 24:00, 25:00 etc to signify next day
+
+                idx = df_stop_times[(df_stop_times['trip_id'] == trip.trip_id) &
+                                    (df_stop_times['stop_id'] == stop_time_update.stop_id)].index
+                if idx.empty:
+                    # it shouldn't be
+                    continue
+
+                idx = idx.item()
+
+                # calculate the real time
+                actual_arrival_time = self.update_time(df_stop_times.at[idx, 'arrival_time'],
+                                                       stop_time_update.arrival_delay)
+                actual_departure_time = self.update_time(df_stop_times.at[idx, 'departure_time'],
+                                                         stop_time_update.departure_delay)
+
+                # add the new values to the new columns
+
+                df_stop_times.at[idx, 'arrival_delay'] = stop_time_update.arrival_delay
+                df_stop_times.at[idx, 'actual_arrival_time'] = actual_arrival_time
+                df_stop_times.at[idx, 'departure_delay'] = stop_time_update.departure_delay
+                df_stop_times.at[idx, 'actual_departure_time'] = actual_departure_time
+                df_stop_times.at[idx, 'schedule_relationship'] = stop_time_update.schedule_relationship
+
+        bar.finish()
+
+        logging.info("Created stop times with delays")
+        self.df_filtered_stop_times_delays = df_stop_times
 
     def _merge_trip_delays(self):
         pass
+
+    def update_time(self, time_str, delay_val):
+        try:
+            # this could be optimised
+            delay_val = int(delay_val)
+            original_time = datetime.datetime.strptime(self.date_of_analysis.strftime("%Y%m%d") + time_str,
+                                                       "%Y%m%d%H:%M:%S")
+            updated_time = original_time + datetime.timedelta(seconds=delay_val)
+            return updated_time.strftime("%H:%M:%S")
+        except:
+            return "Exception"
