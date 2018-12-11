@@ -137,12 +137,22 @@ class TransformTrainDownloads:
 
         self.df_filtered_trips = df
 
-        logging.info("Created timetable")
+        logging.info("Created table of trips that occurred in this time period only")
 
         # TODO filter out by time as well, by looking at the trip.txt
 
     def _filter_stop_times(self):
-        pass
+        logging.info("Creating real schedule of stop times for this time period only")
+
+        # load the static timetable into a data frame
+        df_stop_times = pd.read_csv(self.source_data_dir + '/stop_times.txt', header=0,
+                                    encoding='utf-8-sig',
+                                    dtype={'stop_id': str},
+                                    parse_dates=['arrival_time', 'departure_time'])
+
+        # remove any trips from stop_times that did NOT happen on this date
+        self.df_filtered_stop_times = df_stop_times[df_stop_times['trip_id'].isin(self.df_filtered_trips['trip_id'])]
+        logging.info("Created real schedule of stop times for this time period only")
 
     def _merge_stop_time_delays(self):
         pass
