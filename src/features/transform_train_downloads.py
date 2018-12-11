@@ -26,9 +26,10 @@ class TransformTrainDownloads:
         self.start_time = start_time
         self.end_time = end_time
         self.date_of_analysis = date_of_analysis
+        self.date_of_analysis_str = datetime.date.strftime(self.date_of_analysis, "%Y%m%d")
 
-        self.source_data_dir = "../../data/raw/" + datetime.date.strftime(self.date_of_analysis, "%Y%m%d")
-        self.destination_data_dir = "../../data/interim/" + datetime.date.strftime(self.date_of_analysis, "%Y%m%d")
+        self.source_data_dir = "../../data/raw/" + self.date_of_analysis_str
+        self.destination_data_dir = "../../data/interim/" + self.date_of_analysis_str
 
         log_dir = '../../data/logs/'
         if not os.path.exists(log_dir):
@@ -208,15 +209,79 @@ class TransformTrainDownloads:
         self.df_filtered_stop_times_delays = df_stop_times
 
     def _merge_trip_delays(self):
-        pass
+        logging.info("Creating real trip summaries")
+
+        # load the trip ids of that actual trips that happened on this day
+        df_trips = self.df_filtered_trips
+
+        # get the stop times for trips that happened this day
+        df_stop_times = self.df_filtered_stop_times_delays
+
+        # insert actual arrival, actual departure, and cancellation states into dataframe
+        # mark all as N/A to start with, so we know which things never had real time updates
+        df_trips.insert(0, 'start_timestamp', 'N/A')
+        df_trips.insert(1, 'end_timestamp', 'N/A')
+        df_trips.insert(6, 'maximum_arrival_delay', 0)
+        df_trips.insert(7, 'average_arrival_delay', 0)
+        df_trips.insert(8, 'maximum_departure_delay', 0)
+        df_trips.insert(9, 'average_departure_delay', 0)
+        df_trips.insert(10, 'schedule_relationship', 0)
+
+        # load all delays found on this date
+        trip_delays = self.merged_delays
+
+        bar = Bar('Analyse trips', max=len(trip_delays))
+        for trip in trip_delays.values():
+            bar.next()
+            if trip.trip_id not in df_trips['trip_id'].values:
+                # print("Trip " + trip.trip_id + " was not supposed to run today!")
+                continue
+
+            idx = df_trips[(df_trips['trip_id'] == trip.trip_id)].index
+            if idx.empty:
+                # it shouldn't be
+                continue
+
+            idx = idx.item()
+
+            df_trips.at[idx, 'maximum_arrival_delay'] = trip.maximum_arrival_delay()
+            df_trips.at[idx, 'average_arrival_delay'] = trip.average_arrival_delay()
+            df_trips.at[idx, 'maximum_departure_delay'] = trip.maximum_departure_delay()
+            df_trips.at[idx, 'average_departure_delay'] = trip.average_departure_delay()
+            df_trips.at[idx, 'schedule_relationship'] = trip.overall_schedule_relationship()
+
+        bar.finish()
+
+        bar = Bar('Add stop and start times', max=len(df_trips))
+        for i in df_trips.index:
+            bar.next()
+            departure_series = df_stop_times[df_stop_times['trip_id'] == df_trips.at[i, 'trip_id']]['departure_time']
+            df_trips.at[i, 'start_timestamp'] = self.convert_to_timestamp(departure_series.iloc[0])
+            df_trips.at[i, 'end_timestamp'] = self.convert_to_timestamp(departure_series.iloc[-1])
+
+        bar.finish()
+
+        self.df_filtered_trips_delays = df_trips
+
+        logging.info("Created the real trip summaries for this time period")
 
     def update_time(self, time_str, delay_val):
         try:
             # this could be optimised
             delay_val = int(delay_val)
-            original_time = datetime.datetime.strptime(self.date_of_analysis.strftime("%Y%m%d") + time_str,
-                                                       "%Y%m%d%H:%M:%S")
+            original_time = datetime.datetime.strptime(self.date_of_analysis_str + time_str, "%Y%m%d%H:%M:%S")
             updated_time = original_time + datetime.timedelta(seconds=delay_val)
             return updated_time.strftime("%H:%M:%S")
         except:
             return "Exception"
+
+    def convert_to_timestamp(self, time_str):
+        hours = int(time_str[0:2])
+        if hours > 23:
+            time_str = '0' + str(hours-23) + time_str[2:]
+            retval = datetime.datetime.strptime(self.date_of_analysis_str + time_str, "%Y%m%d%H:%M:%S")
+            retval += datetime.timedelta(days=1)
+            return retval
+        else:
+            retval = datetime.datetime.strptime(self.date_of_analysis_str + time_str, "%Y%m%d%H:%M:%S")
+            return retval
