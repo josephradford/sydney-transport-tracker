@@ -4,6 +4,7 @@ import sys
 from transform_train_downloads import TransformTrainDownloads
 import tweepy
 from dotenv import load_dotenv
+import argparse
 
 
 def analyse_by_time_run(start_time, end_time, date_of_analysis):
@@ -71,9 +72,17 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process delays for a time period')
+    parser.add_argument('start_time', type=str,
+                        help='start time to process from, HH:MM')
+    parser.add_argument('end_time', type=str,
+                        help='end time to process to, HH:MM')
+
+    args = parser.parse_args()
+
     # run in own directory
     os.chdir(os.path.dirname(sys.argv[0]))
     load_dotenv()
-    from_time = time(7, 00, 0)
-    to_time = time(9, 0, 0)
+    from_time = datetime.strptime(args.start_time, "%H:%M").time()
+    to_time = datetime.strptime(args.end_time, "%H:%M").time()
     analyse_by_time_run(from_time, to_time, date.today())
