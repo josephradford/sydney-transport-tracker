@@ -70,10 +70,10 @@ The following task schedule is suggested:
 ```
 
 This will:
-# Save current delay information every two minutes /data/raw/YYYYmmdd/HHMMSS.pickle.
-# Save timetable infomration and unzip it once per day to /data/raw/YYYYmmdd/
-# Analyse delays and tweet them for AM and PM peak times
-# Back up yesterday's raw downloaded data at 1:01 each morning
+* Save current delay information every two minutes /data/raw/YYYYmmdd/HHMMSS.pickle.
+* Save timetable infomration and unzip it once per day to /data/raw/YYYYmmdd/
+* Analyse delays and tweet them for AM and PM peak times
+* Back up yesterday's raw downloaded data at 1:01 each morning
 
 Do *not* use /etc/rc.local. I find that it sometimes starts the script while pi is still in UTC which will ruin your day.
 
