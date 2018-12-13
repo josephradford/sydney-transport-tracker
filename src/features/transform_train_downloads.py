@@ -138,7 +138,10 @@ class TransformTrainDownloads:
                 line_count += 1
 
         # create data frame that is only this day's trips
-        df = pd.read_csv(self.source_data_dir + '/trips.txt', header=0, encoding='utf-8-sig')
+        df = pd.read_csv(self.source_data_dir + '/trips.txt',
+                         header=0,
+                         encoding='utf-8-sig',
+                         usecols=["route_id", "service_id", "trip_id"])
         df = df[df['service_id'].isin(todays_services)]
         df = df[~df['route_id'].isin(['RTTA_DEF', 'RTTA_REV'])]
 
@@ -155,6 +158,7 @@ class TransformTrainDownloads:
         df_stop_times = pd.read_csv(self.source_data_dir + '/stop_times.txt', header=0,
                                     encoding='utf-8-sig',
                                     dtype={'stop_id': str},
+                                    usecols=["trip_id", "arrival_time", "departure_time", "stop_id"],
                                     parse_dates=['arrival_time', 'departure_time'])
 
         # remove any trips from stop_times that did NOT happen on this date
@@ -231,11 +235,11 @@ class TransformTrainDownloads:
         # mark all as N/A to start with, so we know which things never had real time updates
         df_trips.insert(0, 'start_timestamp', 'N/A')
         df_trips.insert(1, 'end_timestamp', 'N/A')
-        df_trips.insert(6, 'maximum_arrival_delay', 0)
-        df_trips.insert(7, 'average_arrival_delay', 0)
-        df_trips.insert(8, 'maximum_departure_delay', 0)
-        df_trips.insert(9, 'average_departure_delay', 0)
-        df_trips.insert(10, 'schedule_relationship', 0)
+        df_trips.insert(5, 'maximum_arrival_delay', 0)
+        df_trips.insert(6, 'average_arrival_delay', 0)
+        df_trips.insert(7, 'maximum_departure_delay', 0)
+        df_trips.insert(8, 'average_departure_delay', 0)
+        df_trips.insert(9, 'schedule_relationship', 0)
 
         # load all delays found on this date
         trip_delays = self.merged_delays
