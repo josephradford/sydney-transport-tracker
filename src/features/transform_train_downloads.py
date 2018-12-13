@@ -47,7 +47,13 @@ class TransformTrainDownloads:
         self._merge_stop_time_delays()
         self._merge_trip_delays()
 
-    def _merge_trips(self, old_trip, new_trip):
+    @staticmethod
+    def _log_and_print(message):
+        logging.info(message)
+        print(message)
+
+    @staticmethod
+    def _merge_trips(old_trip, new_trip):
         if old_trip.trip_id != new_trip.trip_id:
             return old_trip
         if old_trip.timestamp == new_trip.timestamp:
@@ -65,7 +71,7 @@ class TransformTrainDownloads:
         return old_trip
 
     def _merge_delays(self):
-        logging.info("Merging delays in " + self.source_data_dir + " to " + self.destination_data_dir)
+        self._log_and_print("Merging delays in " + self.source_data_dir + " to " + self.destination_data_dir)
 
         # TODO filter the files to those with actual time strings
         files_in_dir = glob.glob(self.source_data_dir + '/*.pickle')
@@ -111,10 +117,10 @@ class TransformTrainDownloads:
                         self.merged_delays[trip_update.trip_id] = trip_update
 
         bar.finish()
-
-        logging.info("Found " + str(len(self.merged_delays)) + " trips")
+        self._log_and_print("Found " + str(len(self.merged_delays)) + " trips")
 
     def _filter_trips(self):
+        self._log_and_print("Creating table of trips that occur on " + self.date_of_analysis_str)
         day_of_analysis = str.lower(calendar.day_name[self.date_of_analysis.isoweekday() - 1])
 
         # create list of services that run on this day
@@ -138,12 +144,12 @@ class TransformTrainDownloads:
 
         self.df_filtered_trips = df
 
-        logging.info("Created table of trips that occurred in this time period only")
-
+        self._log_and_print("Created table of trips that occur on " + self.date_of_analysis_str)
         # TODO filter out by time as well, by looking at the trip.txt
 
     def _filter_stop_times(self):
-        logging.info("Creating real schedule of stop times for this time period only")
+        self._log_and_print("Creating real schedule of stop times on " + self.date_of_analysis_str + " between " +
+                            self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M"))
 
         # load the static timetable into a data frame
         df_stop_times = pd.read_csv(self.source_data_dir + '/stop_times.txt', header=0,
@@ -153,9 +159,12 @@ class TransformTrainDownloads:
 
         # remove any trips from stop_times that did NOT happen on this date
         self.df_filtered_stop_times = df_stop_times[df_stop_times['trip_id'].isin(self.df_filtered_trips['trip_id'])]
-        logging.info("Created real schedule of stop times for this time period only")
+        self._log_and_print("Created real schedule of stop times on " + self.date_of_analysis_str + " between " +
+                     self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M"))
 
     def _merge_stop_time_delays(self):
+        self._log_and_print("Creating stop times with delays on " + self.date_of_analysis_str + " between " +
+                            self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M"))
         df_stop_times = self.df_filtered_stop_times
 
         # insert actual arrival, actual departure, and cancellation states into data frame
@@ -204,12 +213,13 @@ class TransformTrainDownloads:
                 df_stop_times.at[idx, 'schedule_relationship'] = stop_time_update.schedule_relationship
 
         bar.finish()
-
-        logging.info("Created stop times with delays")
         self.df_filtered_stop_times_delays = df_stop_times
+        self._log_and_print("Created stop times with delays on " + self.date_of_analysis_str + " between " +
+                            self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M"))
 
     def _merge_trip_delays(self):
-        logging.info("Creating real trip summaries")
+        self._log_and_print("Creating real trip summaries on " + self.date_of_analysis_str + " between " +
+                            self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M"))
 
         # load the trip ids of that actual trips that happened on this day
         df_trips = self.df_filtered_trips
@@ -263,7 +273,8 @@ class TransformTrainDownloads:
 
         self.df_filtered_trips_delays = df_trips
 
-        logging.info("Created the real trip summaries for this time period")
+        self._log_and_print("Created real trip summaries on " + self.date_of_analysis_str + " between " +
+                            self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M"))
 
     def update_time(self, time_str, delay_val):
         try:
