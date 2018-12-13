@@ -34,7 +34,7 @@ class TransformTrainDownloads:
         log_dir = '../../data/logs/'
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
-        logging.basicConfig(filename=log_dir + 'transform_train_dwonloads.log', level=logging.INFO,
+        logging.basicConfig(filename=log_dir + 'transform_train_downloads.log', level=logging.INFO,
                             format='%(asctime)s %(message)s')
 
     def transform(self):
@@ -81,7 +81,7 @@ class TransformTrainDownloads:
             if self.start_time <= time_f_str < self.end_time:
                 files.append(delay_data_file)
 
-        bar = Bar('Merging files', max=len(files))
+        bar = Bar('Merging delay responses', max=len(files))
         self.merged_delays = dict()
 
         for delay_data_file in files:
@@ -160,7 +160,7 @@ class TransformTrainDownloads:
         # remove any trips from stop_times that did NOT happen on this date
         self.df_filtered_stop_times = df_stop_times[df_stop_times['trip_id'].isin(self.df_filtered_trips['trip_id'])]
         self._log_and_print("Created real schedule of stop times on " + self.date_of_analysis_str + " between " +
-                     self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M"))
+                            self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M"))
 
     def _merge_stop_time_delays(self):
         self._log_and_print("Creating stop times with delays on " + self.date_of_analysis_str + " between " +
@@ -180,7 +180,7 @@ class TransformTrainDownloads:
 
         df_trips = self.df_filtered_trips
 
-        bar = Bar('Analyse trips', max=len(trip_delays))
+        bar = Bar('Add delays to stop times', max=len(trip_delays))
         for trip in trip_delays.values():
             bar.next()
             if trip.trip_id not in df_trips['trip_id'].values:
@@ -240,7 +240,7 @@ class TransformTrainDownloads:
         # load all delays found on this date
         trip_delays = self.merged_delays
 
-        bar = Bar('Analyse trips', max=len(trip_delays))
+        bar = Bar('Add delays to trips', max=len(trip_delays))
         for trip in trip_delays.values():
             bar.next()
             if trip.trip_id not in df_trips['trip_id'].values:
@@ -262,7 +262,7 @@ class TransformTrainDownloads:
 
         bar.finish()
 
-        bar = Bar('Add stop and start times', max=len(df_trips))
+        bar = Bar('Add stop and start times to trips', max=len(df_trips))
         for i in df_trips.index:
             bar.next()
             departure_series = df_stop_times[df_stop_times['trip_id'] == df_trips.at[i, 'trip_id']]['departure_time']
