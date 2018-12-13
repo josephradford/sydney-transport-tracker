@@ -45,6 +45,7 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
     print("Trips delayed = " + str(len(trips_time_delay)))
     print("Trips cancelled = " + str(len(trips_cancelled)))
 
+    # number of delays
     delay_ratio = 100 * len(trips_time_delay) / len(trips_time)
     delay_ratio = round(delay_ratio)
 
@@ -66,9 +67,18 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
 
     print(api.me().name)
 
-    api.update_status(status=tweet_string)
+    # api.update_status(status=tweet_string)
 
-    print("Transformed using new class")
+    # worst delay
+    worst_delay_idx = trips_time_delay['maximum_departure_delay'].idxmax()
+    worst_delay_seconds = trips_time_delay.loc[worst_delay_idx]['maximum_departure_delay']
+    worst_delay_mins_rounded_down = int(worst_delay_seconds / 60)
+
+    worst_delay_status_string = "The worst delay was " + worst_delay_mins_rounded_down + ", experienced on the " + \
+                                 trips_time_delay.loc[worst_delay_idx]['start_timestamp'] + " " 
+                                 trips_time_delay.loc[worst_delay_idx]['trip_short_name'] + " service."
+
+    print(worst_delay_status_string)
 
 
 if __name__ == "__main__":

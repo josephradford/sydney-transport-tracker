@@ -141,7 +141,7 @@ class TransformTrainDownloads:
         df = pd.read_csv(self.source_data_dir + '/trips.txt',
                          header=0,
                          encoding='utf-8-sig',
-                         usecols=["route_id", "service_id", "trip_id"])
+                         usecols=["route_id", "service_id", "trip_id", "trip_short_name"])
         df = df[df['service_id'].isin(todays_services)]
         df = df[~df['route_id'].isin(['RTTA_DEF', 'RTTA_REV'])]
 
