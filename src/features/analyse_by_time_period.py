@@ -41,8 +41,6 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
 
     api = tweepy.API(auth)
 
-    print(api.me().name)
-
     # api.update_status(status=tweet_string)
 
     # worst delay
