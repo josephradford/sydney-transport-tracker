@@ -352,3 +352,8 @@ class TransformTrainDownloads:
 
     def get_worst_delay_idx(self):
         return self.df_filtered_trips_delays['maximum_departure_delay'].idxmax()
+
+    def get_delay_ratio(self):
+        delay_ratio = 100 * self.get_delayed_trips() / self.get_total_trips()
+        return round(delay_ratio)
+

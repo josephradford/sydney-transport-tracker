@@ -21,13 +21,8 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
     print("Trips delayed = " + str(transform.get_delayed_trips()))
     print("Trips cancelled = " + str(transform.get_cancelled_trips()))
 
-    # number of delays
-    delay_ratio = 100 * transform.get_delayed_trips() / transform.get_total_trips()
-    delay_ratio = round(delay_ratio)
-
     tweet_string = "Between " + start_time.strftime("%H:%M") + " and " + end_time.strftime("%H:%M") \
-                   + " today, out of " + str(transform.get_total_trips()) + " trips, " + str(transform.get_delayed_trips()) \
-                   + " experienced delays (" + str(delay_ratio) + "%)."
+                   + " today, " + str(transform.get_delay_ratio()) + "% of trips experienced delays."
 
     print(tweet_string)
 
