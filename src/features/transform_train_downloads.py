@@ -274,6 +274,25 @@ class TransformTrainDownloads:
 
         bar.finish()
 
+        start_dt = datetime.datetime(self.date_of_analysis.year,
+                                     self.date_of_analysis.month,
+                                     self.date_of_analysis.day,
+                                     self.start_time.hour,
+                                     self.start_time.minute,
+                                     self.start_time.second)
+
+        end_dt = datetime.datetime(self.date_of_analysis.year,
+                                   self.date_of_analysis.month,
+                                   self.date_of_analysis.day,
+                                   self.end_time.hour,
+                                   self.end_time.minute,
+                                   self.end_time.second)
+
+        df_trips = df_trips[((start_dt < df_trips['start_timestamp']) &
+                             (df_trips['start_timestamp'] < end_dt)) |
+                            ((start_dt < df_trips['end_timestamp']) &
+                             (df_trips['end_timestamp'] < end_dt))]
+
         self.df_filtered_trips_delays = df_trips
 
         self._log_and_print("Created real trip summaries on " + self.date_of_analysis_str + " between " +

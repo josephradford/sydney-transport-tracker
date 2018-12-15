@@ -17,23 +17,7 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
     # transform.df_filtered_stop_times.to_csv("df_filtered_stop_times.csv")
     # transform.df_filtered_stop_times_delays.to_csv("df_filtered_stop_times_delays.csv")
 
-    start_dt = datetime(datetime.today().year,
-                        datetime.today().month,
-                        datetime.today().day,
-                        start_time.hour,
-                        start_time.minute,
-                        start_time.second)
-
-    end_dt = datetime(datetime.today().year,
-                      datetime.today().month,
-                      datetime.today().day,
-                      end_time.hour,
-                      end_time.minute,
-                      end_time.second)
-
-    trips = transform.df_filtered_trips_delays
-    trips_time = trips[((start_dt < trips['start_timestamp']) & (trips['start_timestamp'] < end_dt)) |
-                       ((start_dt < trips['end_timestamp']) & (trips['end_timestamp'] < end_dt))]
+    trips_time = transform.df_filtered_trips_delays
 
     total_trips = len(trips_time)
 
