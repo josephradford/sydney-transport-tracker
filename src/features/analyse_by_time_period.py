@@ -17,24 +17,16 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
     # transform.df_filtered_stop_times.to_csv("df_filtered_stop_times.csv")
     # transform.df_filtered_stop_times_delays.to_csv("df_filtered_stop_times_delays.csv")
 
-    trips_time = transform.df_filtered_trips_delays
-
-    total_trips = len(trips_time)
-
-    trips_time_delay = trips_time[trips_time['maximum_departure_delay'] > 0]
-
-    trips_cancelled = trips_time[trips_time['schedule_relationship'] > 0]
-
-    print("Total trips = " + str(total_trips))
-    print("Trips delayed = " + str(len(trips_time_delay)))
-    print("Trips cancelled = " + str(len(trips_cancelled)))
+    print("Total trips = " + str(transform.get_total_trips()))
+    print("Trips delayed = " + str(transform.get_delayed_trips()))
+    print("Trips cancelled = " + str(transform.get_cancelled_trips()))
 
     # number of delays
-    delay_ratio = 100 * len(trips_time_delay) / len(trips_time)
+    delay_ratio = 100 * transform.get_delayed_trips() / transform.get_total_trips()
     delay_ratio = round(delay_ratio)
 
     tweet_string = "Between " + start_time.strftime("%H:%M") + " and " + end_time.strftime("%H:%M") \
-                   + " today, out of " + str(len(trips_time)) + " trips, " + str(len(trips_time_delay)) \
+                   + " today, out of " + str(transform.get_total_trips()) + " trips, " + str(transform.get_delayed_trips()) \
                    + " experienced delays (" + str(delay_ratio) + "%)."
 
     print(tweet_string)

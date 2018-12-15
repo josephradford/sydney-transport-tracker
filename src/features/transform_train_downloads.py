@@ -318,3 +318,13 @@ class TransformTrainDownloads:
         else:
             retval = datetime.datetime.strptime(self.date_of_analysis_str + time_str, "%Y%m%d%H:%M:%S")
             return retval
+
+    def get_total_trips(self):
+        return len(self.df_filtered_trips_delays)
+
+    def get_delayed_trips(self):
+        return len(self.df_filtered_trips_delays[self.df_filtered_trips_delays['maximum_departure_delay'] > 0])
+
+    def get_cancelled_trips(self):
+        # TODO work out enums for cancelled
+        return len(self.df_filtered_trips_delays[self.df_filtered_trips_delays['schedule_relationship'] > 0])
