@@ -56,9 +56,7 @@ class TransformTrainDownloads:
     def _merge_trips(old_trip, new_trip):
         if old_trip.trip_id != new_trip.trip_id:
             return old_trip
-        if old_trip.timestamp == new_trip.timestamp:
-            # no updates
-            return old_trip
+        # do not compare timestamps. Same timestamps can have different delay data.
 
         for new_stop_time_update in new_trip.stop_time_updates:
             if new_stop_time_update in old_trip.stop_time_updates:
