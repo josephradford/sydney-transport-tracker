@@ -357,3 +357,16 @@ class TransformTrainDownloads:
         delay_ratio = 100 * self.get_delayed_trips() / self.get_total_trips()
         return round(delay_ratio)
 
+    def get_worst_delay_minutes_rounded_down(self):
+        worst_delay_idx = self.get_worst_delay_idx()
+        worst_delay_seconds = self.df_filtered_trips_delays.loc[worst_delay_idx]['maximum_departure_delay']
+        return int(worst_delay_seconds / 60)
+
+    def get_worst_delay_time_str(self):
+        worst_delay_idx = self.get_worst_delay_idx()
+        return self.df_filtered_trips_delays.loc[worst_delay_idx]['start_timestamp'].strftime("%H:%M")
+
+    def get_worst_delay_route_name(self):
+        worst_delay_idx = self.get_worst_delay_idx()
+        worst_delay_route_id = self.df_filtered_trips_delays.loc[worst_delay_idx]['route_id']
+        return self.route_ids_long_route_name[worst_delay_route_id]
