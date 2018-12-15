@@ -129,12 +129,11 @@ class TransformTrainDownloads:
             csv_reader = csv.DictReader(csv_file)
             line_count = 0
             for row in csv_reader:
-                if line_count != 0:
-                    if row[day_of_analysis] == '1':
-                        start_date = datetime.datetime.strptime(row['start_date'], "%Y%m%d").date()
-                        end_date = datetime.datetime.strptime(row['end_date'], "%Y%m%d").date()
-                        if start_date <= self.date_of_analysis <= end_date:
-                            todays_services.append(row['service_id'])
+                if row[day_of_analysis] == '1':
+                    start_date = datetime.datetime.strptime(row['start_date'], "%Y%m%d").date()
+                    end_date = datetime.datetime.strptime(row['end_date'], "%Y%m%d").date()
+                    if start_date <= self.date_of_analysis <= end_date:
+                        todays_services.append(row['service_id'])
                 line_count += 1
 
         # create data frame that is only this day's trips
