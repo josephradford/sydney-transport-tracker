@@ -41,6 +41,7 @@ class TransformTrainDownloads:
         if not self.is_valid:
             return
 
+        self._map_ids_names()
         self._merge_delays()
         self._filter_trips()
         self._filter_stop_times()
@@ -69,6 +70,27 @@ class TransformTrainDownloads:
                 old_trip.stop_time_updates[new_stop_time_update] = new_trip.stop_time_updates[new_stop_time_update]
 
         return old_trip
+
+    def _map_ids_names(self):
+        # TODO this can be moved, done once when today's services are downloaded
+        self.stop_ids_station_names = dict()
+        self.stop_ids_stop_names = dict()
+        self.route_ids_long_route_name = dict()
+        with open(self.source_data_dir + '/stops.txt', mode='r', encoding='utf-8-sig') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            line_count = 0
+            for row in csv_reader:
+                if row['parent_station'] == '':
+                    self.stop_ids_station_names[row['stop_id']] = row['stop_name']
+                else:
+                    self.stop_ids_station_names[row['stop_id']] = self.stop_ids_station_names[row['parent_station']]
+                self.stop_ids_stop_names[row['stop_id']] = row['stop_name']
+                line_count += 1
+
+        with open(self.source_data_dir + '/routes.txt', mode='r', encoding='utf-8-sig') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                self.route_ids_long_route_name[row['route_id']] = row['route_long_name']
 
     def _merge_delays(self):
         self._log_and_print("Merging delays in " + self.source_data_dir + " to " + self.destination_data_dir)
