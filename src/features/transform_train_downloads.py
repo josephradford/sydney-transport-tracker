@@ -350,3 +350,6 @@ class TransformTrainDownloads:
     def get_cancelled_trips(self):
         # TODO work out enums for cancelled
         return len(self.df_filtered_trips_delays[self.df_filtered_trips_delays['schedule_relationship'] > 0])
+
+    def get_worst_delay_idx(self):
+        return self.df_filtered_trips_delays['maximum_departure_delay'].idxmax()

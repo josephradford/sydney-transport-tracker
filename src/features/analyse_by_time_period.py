@@ -46,13 +46,17 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
     # api.update_status(status=tweet_string)
 
     # worst delay
-    worst_delay_idx = trips_time_delay['maximum_departure_delay'].idxmax()
-    worst_delay_seconds = trips_time_delay.loc[worst_delay_idx]['maximum_departure_delay']
+    worst_delay_idx = transform.get_worst_delay_idx()
+    df_trips = transform.df_filtered_trips_delays
+    worst_delay_seconds = df_trips.loc[worst_delay_idx]['maximum_departure_delay']
     worst_delay_mins_rounded_down = int(worst_delay_seconds / 60)
+    worst_delay_route_id = df_trips.loc[worst_delay_idx]['route_id']
+    worst_delay_route_name = transform.route_ids_long_route_name[worst_delay_route_id]
+    worst_delay_time_str = df_trips.loc[worst_delay_idx]['start_timestamp'].strftime("%H:%M")
 
-    worst_delay_status_string = "The worst delay was " + worst_delay_mins_rounded_down + ", experienced on the " + \
-                                 trips_time_delay.loc[worst_delay_idx]['start_timestamp'] + " " 
-                                 trips_time_delay.loc[worst_delay_idx]['trip_short_name'] + " service."
+    worst_delay_status_string = "The worst delay was " + str(worst_delay_mins_rounded_down) + " minutes, " + \
+                                "experienced on the " + worst_delay_time_str + " " + worst_delay_route_name + \
+                                " service."
 
     print(worst_delay_status_string)
 
