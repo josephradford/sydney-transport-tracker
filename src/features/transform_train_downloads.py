@@ -29,7 +29,6 @@ class TransformTrainDownloads:
         self.date_of_analysis_str = datetime.date.strftime(self.date_of_analysis, "%Y%m%d")
 
         self.source_data_dir = "../../data/raw/" + self.date_of_analysis_str
-        self.destination_data_dir = "../../data/interim/" + self.date_of_analysis_str
 
         log_dir = '../../data/logs/'
         if not os.path.exists(log_dir):
@@ -93,7 +92,7 @@ class TransformTrainDownloads:
                 self.route_ids_long_route_name[row['route_id']] = row['route_long_name']
 
     def _merge_delays(self):
-        self._log_and_print("Merging delays in " + self.source_data_dir + " to " + self.destination_data_dir)
+        self._log_and_print("Merging delays in " + self.source_data_dir)
 
         # TODO filter the files to those with actual time strings
         files_in_dir = glob.glob(self.source_data_dir + '/*.pickle')
