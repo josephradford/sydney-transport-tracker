@@ -19,13 +19,23 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
 
     print("Total trips = " + str(transform.get_total_trips()))
     print("Trips delayed = " + str(transform.get_delayed_trips()))
-    print("Trips cancelled = " + str(transform.get_cancelled_trips()))
+    print("Trips not scheduled = " + str(transform.get_cancelled_trips()))
 
-    tweet_string = "Between " + start_time.strftime("%H:%M") + " and " + end_time.strftime("%H:%M") \
-                   + " today, " + str(transform.get_delay_ratio()) + "% of trips experienced delays."
+    # During the morning peak time, x% of trips experienced delays #sydneytrains
+    delay_ratio_string = "Between " + start_time.strftime("%H:%M") + " and " + end_time.strftime("%H:%M") + \
+                         " today, " + str(transform.get_delay_ratio()) + "% of trips experienced delays."
 
-    print(tweet_string)
+    print(delay_ratio_string)
 
+    # worst delay
+    # The worst delay was x minutes, on the HH:MM ABC service #sydneytrains
+    worst_delay_status_string = "The worst delay was " + str(transform.get_worst_delay_minutes_rounded_down()) + \
+                                " minutes, experienced on the " + transform.get_worst_delay_time_str() + " " + \
+                                transform.get_worst_delay_route_name() + " service."
+
+    print(worst_delay_status_string)
+
+    # tweet it
     consumer_key = os.getenv("CONSUMER_KEY")
     consumer_secret = os.getenv("CONSUMER_SECRET")
     access_token = os.getenv("ACCESS_TOKEN")
@@ -35,15 +45,8 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
     auth.set_access_token(access_token, access_token_secret)
 
     api = tweepy.API(auth)
-
-    # api.update_status(status=tweet_string)
-
-    # worst delay
-    worst_delay_status_string = "The worst delay was " + str(transform.get_worst_delay_minutes_rounded_down()) + \
-                                " minutes, experienced on the " + transform.get_worst_delay_time_str() + " " + \
-                                transform.get_worst_delay_route_name() + " service."
-
-    print(worst_delay_status_string)
+    api.update_status(status=delay_ratio_string)
+    api.update_status(status=worst_delay_status_string)
 
 
 if __name__ == "__main__":
