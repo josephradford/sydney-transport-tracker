@@ -1,5 +1,6 @@
 import os
-from datetime import time, date, datetime
+from datetime import date, datetime
+import time
 import sys
 from transform_train_downloads import TransformTrainDownloads
 import tweepy
@@ -46,6 +47,7 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
 
     api = tweepy.API(auth)
     api.update_status(status=delay_ratio_string)
+    time.sleep(5)
     api.update_status(status=worst_delay_status_string)
 
 
