@@ -24,15 +24,15 @@ def analyse_by_time_run(start_time, end_time, date_of_analysis):
 
     # During the morning peak time, x% of trips experienced delays #sydneytrains
     delay_ratio_string = "Between " + start_time.strftime("%H:%M") + " and " + end_time.strftime("%H:%M") + \
-                         " today, " + str(transform.get_delay_ratio()) + "% of trips experienced delays."
+                         " today, " + str(transform.get_delay_ratio()) + "% of trips experienced delays. #sydneytrains"
 
     print(delay_ratio_string)
 
     # worst delay
     # The worst delay was x minutes, on the HH:MM ABC service #sydneytrains
     worst_delay_status_string = "The worst delay was " + str(transform.get_worst_delay_minutes_rounded_down()) + \
-                                " minutes, experienced on the " + transform.get_worst_delay_time_str() + " " + \
-                                transform.get_worst_delay_route_name() + " service."
+                                " minutes, on the " + transform.get_worst_delay_time_str() + " " + \
+                                transform.get_worst_delay_route_name() + " service. #sydneytrains"
 
     print(worst_delay_status_string)
 
