@@ -1,6 +1,6 @@
 # sydney-transport-tracker
 
-Automated scripts for downloading, analysing, and publishing insights about the public transport in Sydney, Australia.
+Automated scripts for downloading, analysing, and [publishing insights](https://twitter.com/SydStats) about the public transport in Sydney, Australia.
 
 ## Getting Started
 This is currently developed on Ubuntu. The target platform is Linux (Raspbian).
