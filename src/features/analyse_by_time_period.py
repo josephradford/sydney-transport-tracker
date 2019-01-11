@@ -7,9 +7,16 @@ import tweepy
 from dotenv import load_dotenv
 import argparse
 
+ROUTES_TO_IGNORE = ["CTY_NC1", "CTY_NC1a", "CTY_NC2", "CTY_NW1a", "CTY_NW1b", "CTY_NW1c", "CTY_NW1d",
+                    "CTY_NW2a", "CTY_NW2b", "CTY_S1a", "CTY_S1b", "CTY_S1c", "CTY_S1d", "CTY_S1e",
+                    "CTY_S1f", "CTY_S1g", "CTY_S1h", "CTY_S1i", "CTY_S2a", "CTY_S2b", "CTY_S2c",
+                    "CTY_S2d", "CTY_S2e", "CTY_S2f", "CTY_S2g", "CTY_S2h", "CTY_S2i", "CTY_W1a",
+                    "CTY_W1b", "CTY_W2a", "CTY_W2b", "HUN_1a", "HUN_1b", "HUN_2a", "HUN_2b",
+                    "RTTA_DEF", "RTTA_REV"]
+
 
 def analyse_by_time_run(start_time, end_time, date_of_analysis):
-    transform = TransformTrainDownloads(start_time, end_time, date_of_analysis)
+    transform = TransformTrainDownloads(start_time, end_time, date_of_analysis, ROUTES_TO_IGNORE)
     transform.transform()
 
     # currently, a lot of these are duplicates of each other due to not making deep copies in pandas
