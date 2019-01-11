@@ -1,9 +1,7 @@
 import os
 from datetime import date, datetime
-import time
 import sys
 from transform_train_downloads import TransformTrainDownloads
-import tweepy
 from dotenv import load_dotenv
 import argparse
 
@@ -15,47 +13,44 @@ ROUTES_TO_IGNORE = ["CTY_NC1", "CTY_NC1a", "CTY_NC2", "CTY_NW1a", "CTY_NW1b", "C
                     "RTTA_DEF", "RTTA_REV"]
 
 
+class AnalyseByTimePeriod:
+
+    def __init__(self, start_time, end_time, date_of_analysis):
+        self.start_time = start_time
+        self.end_time = end_time
+        self.date_of_analysis = date_of_analysis
+        self.transform = TransformTrainDownloads(self.start_time, self.end_time, self.date_of_analysis, ROUTES_TO_IGNORE)
+        self.transform.transform()
+
+        # delay files outside of the time range will need to be considered
+        # if a stop at the end of the time range is a few minutes late at the end of the time range,
+        # then is reported much later after the time range is finished, this needs to be parsed
+
+        # currently, a lot of these are duplicates of each other due to not making deep copies in pandas
+        # transform.df_filtered_trips.to_csv("df_filtered_trips.csv")
+        # transform.df_filtered_trips_delays.to_csv("df_filtered_trips_delays.csv")
+        # transform.df_filtered_stop_times.to_csv("df_filtered_stop_times.csv")
+        # transform.df_filtered_stop_times_delays.to_csv("df_filtered_stop_times_delays.csv")
+
+    def delay_ratio_string(self):
+        # During the morning peak time, x% of trips experienced delays #sydneytrains
+        return "Between " + self.start_time.strftime("%H:%M") + " and " + self.end_time.strftime("%H:%M") + \
+               " today, " + str(self.transform.get_delay_ratio()) + "% of trips experienced delays. #sydneytrains"
+
+    def worst_delay_status_string(self):
+        # The worst delay was x minutes, on the HH:MM ABC service #sydneytrains
+        return "The worst delay was " + str(self.transform.get_worst_delay_minutes_rounded_down()) + \
+               " minutes, on the " + self.transform.get_worst_delay_time_str() + " " + \
+               self.transform.get_worst_delay_route_name() + " service. #sydneytrains"
+
+
 def analyse_by_time_run(start_time, end_time, date_of_analysis):
-    transform = TransformTrainDownloads(start_time, end_time, date_of_analysis, ROUTES_TO_IGNORE)
-    transform.transform()
-
-    # currently, a lot of these are duplicates of each other due to not making deep copies in pandas
-    # transform.df_filtered_trips.to_csv("df_filtered_trips.csv")
-    # transform.df_filtered_trips_delays.to_csv("df_filtered_trips_delays.csv")
-    # transform.df_filtered_stop_times.to_csv("df_filtered_stop_times.csv")
-    # transform.df_filtered_stop_times_delays.to_csv("df_filtered_stop_times_delays.csv")
-
-    print("Total trips = " + str(transform.get_total_trips()))
-    print("Trips delayed = " + str(transform.get_delayed_trips()))
-    print("Trips not scheduled = " + str(transform.get_cancelled_trips()))
-
-    # During the morning peak time, x% of trips experienced delays #sydneytrains
-    delay_ratio_string = "Between " + start_time.strftime("%H:%M") + " and " + end_time.strftime("%H:%M") + \
-                         " today, " + str(transform.get_delay_ratio()) + "% of trips experienced delays. #sydneytrains"
-
-    print(delay_ratio_string)
-
-    # worst delay
-    # The worst delay was x minutes, on the HH:MM ABC service #sydneytrains
-    worst_delay_status_string = "The worst delay was " + str(transform.get_worst_delay_minutes_rounded_down()) + \
-                                " minutes, on the " + transform.get_worst_delay_time_str() + " " + \
-                                transform.get_worst_delay_route_name() + " service. #sydneytrains"
-
-    print(worst_delay_status_string)
-
-    # tweet it
-    consumer_key = os.getenv("CONSUMER_KEY")
-    consumer_secret = os.getenv("CONSUMER_SECRET")
-    access_token = os.getenv("ACCESS_TOKEN")
-    access_token_secret = os.getenv("ACCESS_TOKEN_SECRET")
-
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-
-    api = tweepy.API(auth)
-    api.update_status(status=delay_ratio_string)
-    time.sleep(5)
-    api.update_status(status=worst_delay_status_string)
+    analysis = AnalyseByTimePeriod(start_time, end_time, date_of_analysis)
+    print("Total trips = " + str(analysis.transform.get_total_trips()))
+    print("Trips delayed = " + str(analysis.transform.get_delayed_trips()))
+    print("Trips not scheduled = " + str(analysis.transform.get_cancelled_trips()))
+    print(analysis.delay_ratio_string())
+    print(analysis.worst_delay_status_string())
 
 
 if __name__ == "__main__":
