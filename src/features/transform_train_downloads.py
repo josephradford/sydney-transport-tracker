@@ -11,7 +11,6 @@ import csv
 import pandas as pd
 
 
-
 class TransformTrainDownloads:
 
     def __init__(self, start_time, end_time, date_of_analysis, routes_to_ignore):
@@ -49,6 +48,11 @@ class TransformTrainDownloads:
         self._filter_stop_times()
         self._merge_stop_time_delays()
         self._merge_trip_delays()
+
+        # do once, when the day's timetable is downloaded
+        # from a separate script, call the daily timetable download, then analyse it and put stuff into interim
+        # today's trips (trips.txt) _filter_trips
+        # today's stop times (stop_times.txt) _filter_stop_times, add start and stop times here?
 
     @staticmethod
     def _log_and_print(message):
