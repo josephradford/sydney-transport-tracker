@@ -63,3 +63,5 @@ venv3/
 *.env
 
 \.idea/
+
+notebooks/home/pi/sydney-transport-tracker/data/raw/20190123/
