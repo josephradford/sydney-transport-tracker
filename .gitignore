@@ -65,3 +65,5 @@ venv3/
 \.idea/
 
 notebooks/home/pi/sydney-transport-tracker/data/raw/20190123/
+
+notebooks/\.ipynb_checkpoints/
