@@ -212,6 +212,7 @@ class TransformTrainDownloads:
         bar = Bar('Add delays to stop times', max=len(trip_delays))
         for trip in trip_delays.values():
             bar.next()
+            df_stop_times_this_trip = df_stop_times[(df_stop_times['trip_id'] == trip.trip_id)]
             if trip.trip_id not in df_trips['trip_id'].values:
                 # print("Trip " + trip.trip_id + " was not supposed to run today!")
                 continue
@@ -219,8 +220,7 @@ class TransformTrainDownloads:
             for stop_time_update in trip.stop_time_updates.values():
                 # some of these values might be 24:00, 25:00 etc to signify next day
 
-                idx = df_stop_times[(df_stop_times['trip_id'] == trip.trip_id) &
-                                    (df_stop_times['stop_id'] == stop_time_update.stop_id)].index
+                idx = df_stop_times_this_trip[(df_stop_times_this_trip['stop_id'] == stop_time_update.stop_id)].index
                 if idx.empty:
                     # it shouldn't be
                     continue
@@ -228,13 +228,12 @@ class TransformTrainDownloads:
                 idx = idx.item()
 
                 # calculate the real time
-                actual_arrival_time = self.update_time(df_stop_times.at[idx, 'arrival_time'],
+                actual_arrival_time = self.update_time(df_stop_times_this_trip.at[idx, 'arrival_time'],
                                                        stop_time_update.arrival_delay)
-                actual_departure_time = self.update_time(df_stop_times.at[idx, 'departure_time'],
+                actual_departure_time = self.update_time(df_stop_times_this_trip.at[idx, 'departure_time'],
                                                          stop_time_update.departure_delay)
 
                 # add the new values to the new columns
-
                 df_stop_times.at[idx, 'arrival_delay'] = stop_time_update.arrival_delay
                 df_stop_times.at[idx, 'actual_arrival_time'] = actual_arrival_time
                 df_stop_times.at[idx, 'departure_delay'] = stop_time_update.departure_delay
