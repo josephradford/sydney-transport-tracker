@@ -63,3 +63,9 @@ venv3/
 *.env
 
 \.idea/
+
+notebooks/home/pi/sydney-transport-tracker/data/raw/
+
+notebooks/\.ipynb_checkpoints/
+
+*.pickle
