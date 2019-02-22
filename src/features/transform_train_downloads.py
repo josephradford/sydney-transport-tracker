@@ -10,16 +10,10 @@ import calendar
 import csv
 import pandas as pd
 
-ROUTES_TO_IGNORE = ["CTY_NC1", "CTY_NC1a", "CTY_NC2", "CTY_NW1a", "CTY_NW1b", "CTY_NW1c", "CTY_NW1d",
-                    "CTY_NW2a", "CTY_NW2b", "CTY_S1a", "CTY_S1b", "CTY_S1c", "CTY_S1d", "CTY_S1e",
-                    "CTY_S1f", "CTY_S1g", "CTY_S1h", "CTY_S1i", "CTY_S2a", "CTY_S2b", "CTY_S2c",
-                    "CTY_S2d", "CTY_S2e", "CTY_S2f", "CTY_S2g", "CTY_S2h", "CTY_S2i", "CTY_W1a",
-                    "CTY_W1b", "CTY_W2a", "CTY_W2b", "HUN_1a", "HUN_1b", "HUN_2a", "HUN_2b",
-                    "RTTA_DEF", "RTTA_REV"]
 
 class TransformTrainDownloads:
 
-    def __init__(self, start_time, end_time, date_of_analysis):
+    def __init__(self, start_time, end_time, date_of_analysis, routes_to_ignore):
         self.is_valid = False
         if type(start_time) is not datetime.time:
             return
@@ -33,6 +27,8 @@ class TransformTrainDownloads:
         self.end_time = end_time
         self.date_of_analysis = date_of_analysis
         self.date_of_analysis_str = datetime.date.strftime(self.date_of_analysis, "%Y%m%d")
+
+        self.routes_to_ignore = routes_to_ignore
 
         self.source_data_dir = "../../data/raw/" + self.date_of_analysis_str
 
@@ -52,6 +48,11 @@ class TransformTrainDownloads:
         self._filter_stop_times()
         self._merge_stop_time_delays()
         self._merge_trip_delays()
+
+        # do once, when the day's timetable is downloaded
+        # from a separate script, call the daily timetable download, then analyse it and put stuff into interim
+        # today's trips (trips.txt) _filter_trips
+        # today's stop times (stop_times.txt) _filter_stop_times, add start and stop times here?
 
     @staticmethod
     def _log_and_print(message):
@@ -167,7 +168,7 @@ class TransformTrainDownloads:
                          encoding='utf-8-sig',
                          usecols=["route_id", "service_id", "trip_id", "trip_short_name"])
         df = df[df['service_id'].isin(todays_services)]
-        df = df[~df['route_id'].isin(ROUTES_TO_IGNORE)]
+        df = df[~df['route_id'].isin(self.routes_to_ignore)]
 
         self.df_filtered_trips = df
 
