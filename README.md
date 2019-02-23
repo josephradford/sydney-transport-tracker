@@ -51,7 +51,7 @@ Create .env files as described in the previous section, and setup Dropbox.
 
 Get all packages by running
 ```
-pip3 install -r requirements
+pip3 install -r requirements.txt
 ```
 
 Set up cron jobs by typing
