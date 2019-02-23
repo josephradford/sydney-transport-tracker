@@ -63,8 +63,8 @@ The following task schedule is suggested:
 ```
 */2 * * * * python3 /home/pi/sydney-transport-tracker/src/data/train_delay_download.py
 1 4 * * * python3 /home/pi/sydney-transport-tracker/src/data/train_timetable_download.py
-1 9 * * * python3 /home/pi/sydney-transport-tracker/src/features/tweet_by_time_period.py 07:00 09:00
-31 18 * * * python3 /home/pi/sydney-transport-tracker/src/features/tweet_by_time_period.py 16:00 18:30
+1 9 * * * python3 /home/pi/sydney-transport-tracker/src/features/tweet_time_period.py 07:00 09:00
+31 18 * * * python3 /home/pi/sydney-transport-tracker/src/features/tweet_time_period.py 16:00 18:30
 1 1 * * * /home/pi/sydney-transport-tracker/tools/upload_yesterday.sh
 
 ```
