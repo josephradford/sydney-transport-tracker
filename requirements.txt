@@ -6,7 +6,7 @@ decorator==4.3.2
 defusedxml==0.5.0
 entrypoints==0.3
 gtfs-realtime-bindings==0.0.5
-idna==2.8
+idna==3.7
 ipykernel==5.1.0
 ipython==7.2.0
 ipython-genutils==0.2.0
